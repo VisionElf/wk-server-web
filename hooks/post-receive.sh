@@ -36,7 +36,7 @@ npm run build
 echo "--> Move Front to /var/www/"
 
 mkdir -p "$WEB_ROOT"
-rsync -a --delete "$FRONT_DIR/dist/" "$WEB_ROOT/"
+cp "$FRONT_DIR/dist/" "$WEB_ROOT/"
 
 echo "--> Build and restart backend container"
 cd "$APP_DIR"
