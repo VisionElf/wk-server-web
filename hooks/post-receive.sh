@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+export NVM_DIR="/home/waserk/.nvm"
+source "$NVM_DIR/nvm.sh"
+nvm use 20
+
 BRANCH="main"
 REPO_DIR="/home/waserk/git/wk-server-web.git"
 
@@ -14,10 +18,6 @@ echo "=== Deploy start ==="
 cd "$APP_DIR"
 
 echo "[1/3] Build frontend"
-
-export NVM_DIR="$HOME/.nvm"
-source "$NVM_DIR/nvm.sh"
-nvm use 20
 
 cd "$FRONT_DIR"
 npm ci
