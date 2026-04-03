@@ -34,9 +34,13 @@ npm ci
 npm run build
 
 echo "--> Move Front to /var/www/"
+sudo mkdir -p "$WEB_ROOT"
+sudo rsync -a --delete "$FRONT_DIR/dist/" "$WEB_ROOT/"
 
-mkdir -p "$WEB_ROOT"
-cp -r "$FRONT_DIR/dist/" "$WEB_ROOT/"
+echo "--> Set permissions"
+sudo chown -R www-data:www-data "$WEB_ROOT"
+sudo find "$WEB_ROOT" -type d -exec chmod 755 {} \;
+sudo find "$WEB_ROOT" -type f -exec chmod 644 {} \;
 
 echo "--> Build and restart backend container"
 cd "$APP_DIR"
