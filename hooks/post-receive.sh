@@ -3,18 +3,19 @@ set -e
 
 echo "=== POST RECEIVE START ==="
 
-source "/home/waserk/.nvm/nvm.sh"
+HOME_DIR="/home/waserk"
+
+source "$HOME_DIR/.nvm/nvm.sh"
 nvm use 20
 
 echo "USER=$(whoami)"
-echo "HOME=$HOME"
 which node
 node -v
 
 BRANCH="main"
-REPO_DIR="/home/waserk/git/wk-server-web.git"
+REPO_DIR="$HOME_DIR/git/wk-server-web.git"
 
-APP_DIR="/home/waserk/apps/wk-server-web"
+APP_DIR="$HOME_DIR/apps/wk-server-web"
 FRONT_DIR="$APP_DIR/frontend/wk-frontend"
 
 echo "--> Checkout code"
