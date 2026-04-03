@@ -3,7 +3,7 @@ set -e
 
 echo "Deploy start"
 
-cd "/home/waserk/git/wk-server-web"
+cd "/home/waserk/apps/wk-server-web"
 docker compose down
 docker compose up -d --build
 
