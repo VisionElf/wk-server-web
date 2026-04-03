@@ -3,7 +3,7 @@ set -e
 
 echo "=== POST RECEIVE START ==="
 
-source "$NVM_DIR/nvm.sh"
+source "/home/waserk/.nvm/nvm.sh"
 nvm use 20
 
 echo "USER=$(whoami)"
