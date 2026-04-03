@@ -3,8 +3,26 @@ services:
     build:
       context: ./backend/WkApi
     container_name: wk-api
+    depends_on:
+      - db
     expose:
       - "8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=wkdb;Username=wkuser;Password=wkpassword
+
+  db:
+    image: postgres:16
+    container_name: wk-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wkdb
+      POSTGRES_USER: wkuser
+      POSTGRES_PASSWORD: wkpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   web:
     build:
