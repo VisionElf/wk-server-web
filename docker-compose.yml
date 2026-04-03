@@ -1,11 +1,9 @@
 services:
-  app:
-    build: .
-    env_file:
-      - .env
-    environment:
-      - APP_ENV=${APP_ENV}
-    container_name: wk-server-web
+  api:
+    build: ./backend/WkApi
+    container_name: wk-api
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${PORT}:${PORT}"
+      - "127.0.0.1:5000:8080"
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8080

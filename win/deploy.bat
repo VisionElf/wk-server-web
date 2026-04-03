@@ -1,0 +1,1 @@
+ssh waserk@192.168.1.65 "/home/waserk/scripts/deploy_wk_server_web.sh"

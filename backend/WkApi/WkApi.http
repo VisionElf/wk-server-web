@@ -1,0 +1,6 @@
+@WkApi_HostAddress = http://localhost:5122
+
+GET {{WkApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
