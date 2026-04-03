@@ -37,7 +37,7 @@ docker compose down
 docker compose up -d --build
 
 echo "--> Reload nginx"
-sudo nginx -t
-sudo systemctl reload nginx
+nginx -t
+systemctl reload nginx
 
 echo "=== Deploy done ==="
