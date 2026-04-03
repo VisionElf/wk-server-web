@@ -1,1 +1,1 @@
-ssh waserk@192.168.1.65 "/home/waserk/scripts/deploy_wk_server_web.sh"
+ssh waserk@192.168.1.65 "/home/waserk/apps/wk-server-web/hooks/post-receive.sh"

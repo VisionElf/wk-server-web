@@ -14,6 +14,11 @@ echo "=== Deploy start ==="
 cd "$APP_DIR"
 
 echo "[1/3] Build frontend"
+
+export NVM_DIR="$HOME/.nvm"
+source "$NVM_DIR/nvm.sh"
+nvm use 20
+
 cd "$FRONT_DIR"
 npm ci
 npm run build
