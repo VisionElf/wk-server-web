@@ -36,8 +36,4 @@ cd "$APP_DIR"
 docker compose down
 docker compose up -d --build
 
-echo "--> Reload nginx"
-nginx -t
-systemctl reload nginx
-
 echo "=== Deploy done ==="
