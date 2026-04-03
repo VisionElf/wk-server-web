@@ -5,5 +5,7 @@ services:
       - .env
     environment:
       - APP_ENV=${APP_ENV}
+    container_name: wk-server-web
+    restart: unless-stopped
     ports:
-      - "${PORT}:5000"
+      - "127.0.0.1:${PORT}:${PORT}"
