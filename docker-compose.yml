@@ -1,14 +1,14 @@
 services:
   api:
     build:
-      context: ./backend
+      context: ./backend/WkApi
     container_name: wk-api
     expose:
       - "8080"
 
   web:
     build:
-      context: ./frontend
+      context: ./frontend/wk-frontend
     container_name: wk-web
     ports:
       - "80:80"
