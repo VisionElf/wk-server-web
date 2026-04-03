@@ -37,6 +37,5 @@ docker compose down
 docker compose up -d --build
 
 echo "=== Deploy done ==="
-echo "toto"
 
 docker compose ps -a
