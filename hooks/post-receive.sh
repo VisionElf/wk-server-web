@@ -1,8 +1,13 @@
 #!/bin/bash
 set -e
 
+BRANCH="main"
+REPO_DIR="/home/waserk/git/wk-server-web.git"
+
 APP_DIR="/home/waserk/apps/wk-server-web"
 FRONT_DIR="$APP_DIR/frontend/wk-frontend"
+
+git --work-tree="$APP_DIR" --git-dir "$REPO_DIR" checkout -f "$BRANCH"
 
 echo "=== Deploy start ==="
 
