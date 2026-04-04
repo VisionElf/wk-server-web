@@ -45,14 +45,19 @@ export default function UpcomingPage() {
               Currently loading:{" "}
               {crawlStatusLine !== "" ? crawlStatusLine : "…"}
             </p>
-            <button type="button" className="ui-btn" onClick={closeCrawlModal}>
+            <button
+              type="button"
+              className="ui-btn"
+              onClick={closeCrawlModal}
+              title="Hide this dialog. The crawl keeps running in the background."
+            >
               Close
             </button>
           </div>
         </div>
       ) : null}
       <div className="ui-page-header">
-        <div>
+        <div className="ui-page-header__intro">
           <h1>Upcoming matches</h1>
           <p className="ui-lead">
           </p>
@@ -62,14 +67,17 @@ export default function UpcomingPage() {
             </p>
           )}
         </div>
-        <button
-          type="button"
-          className="ui-btn ui-btn--primary"
-          onClick={() => void onRefresh()}
-          disabled={refreshing}
-        >
-          {refreshing ? "Refreshing…" : "Refresh"}
-        </button>
+        <div className="ui-page-actions">
+          <button
+            type="button"
+            className="ui-btn ui-btn--primary"
+            onClick={() => void onRefresh()}
+            disabled={refreshing}
+            title="Crawl Liquipedia and rebuild the match cache (often ~10–30s)."
+          >
+            {refreshing ? "Refreshing…" : "Refresh"}
+          </button>
+        </div>
       </div>
 
       {error != null && <p className="ui-error">{error}</p>}

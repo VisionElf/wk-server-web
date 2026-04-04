@@ -29,15 +29,22 @@ export default function HistoryPage() {
   return (
     <div className="app-page ui-page--constrained">
       <div className="ui-page-header">
-        <div>
+        <div className="ui-page-header__intro">
           <h1>History</h1>
           <p className="ui-lead">
             Recent changes across all tracked items (newest first).
           </p>
         </div>
-        <button type="button" className="ui-btn" onClick={() => void load()}>
-          Refresh
-        </button>
+        <div className="ui-page-actions">
+          <button
+            type="button"
+            className="ui-btn"
+            onClick={() => void load()}
+            title="Reload the history list from the server."
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
       {error != null && <p className="ui-error">{error}</p>}

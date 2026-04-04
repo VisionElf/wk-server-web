@@ -168,6 +168,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
                 className="ui-btn"
                 onClick={() => setShowCustom(false)}
                 disabled={busy}
+                title="Return to the main actions without applying this date."
               >
                 Back
               </button>
@@ -176,6 +177,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
                 className="ui-btn ui-btn--primary"
                 onClick={() => void onSaveCustom()}
                 disabled={busy}
+                title="Use this date as the last change time and close."
               >
                 Save
               </button>
@@ -204,6 +206,11 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
                 className="ui-btn ui-btn--primary"
                 onClick={() => void onMarkNow()}
                 disabled={busy}
+                title={
+                  mode === "add"
+                    ? "Create the item and record a change at the current time."
+                    : "Record a new change at the current time."
+                }
               >
                 {mode === "add" ? "Create & mark now" : "Mark as changed now"}
               </button>
@@ -212,6 +219,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
                 className="ui-btn"
                 onClick={() => setShowCustom(true)}
                 disabled={busy}
+                title="Pick a specific date instead of “now”."
               >
                 Set custom date…
               </button>
@@ -221,6 +229,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
                   className="ui-btn ui-btn--danger"
                   onClick={() => void onClearHistory()}
                   disabled={busy}
+                  title="Remove all past events for this item (the item stays)."
                 >
                   Clear history
                 </button>
@@ -231,6 +240,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
                   className="ui-btn ui-btn--danger"
                   onClick={() => void onDelete()}
                   disabled={busy}
+                  title="Delete this item and its entire history."
                 >
                   Delete item
                 </button>
@@ -242,6 +252,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
                 className="ui-btn"
                 onClick={onClose}
                 disabled={busy}
+                title="Close the dialog without saving."
               >
                 Cancel
               </button>

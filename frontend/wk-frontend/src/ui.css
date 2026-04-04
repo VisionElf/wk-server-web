@@ -6,14 +6,26 @@
 /* —— Page blocks —— */
 .ui-page-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
   margin-bottom: 1.25rem;
 }
 
-.ui-page-header h1 {
-  margin: 0;
+.ui-page-header__intro > h1 {
+  margin: 0 0 0.5rem;
+}
+
+.ui-page-header__intro .ui-lead {
+  margin: 0.35rem 0 0;
+}
+
+.ui-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.75rem;
 }
 
 .ui-lead {
@@ -155,31 +167,6 @@
   border-color: var(--danger-fg);
 }
 
-/* —— FAB —— */
-.ui-fab {
-  position: fixed;
-  right: 1.5rem;
-  bottom: 1.5rem;
-  width: 3.25rem;
-  height: 3.25rem;
-  border-radius: 50%;
-  border: none;
-  background: var(--accent);
-  color: #fff;
-  font-size: 1.75rem;
-  font-weight: 300;
-  line-height: 1;
-  cursor: pointer;
-  box-shadow: var(--shadow);
-  transition: transform 0.12s ease, filter 0.12s ease;
-  z-index: 2;
-}
-
-.ui-fab:hover:not(:disabled) {
-  transform: scale(1.05);
-  filter: brightness(1.08);
-}
-
 /* —— Modal —— */
 .ui-modal-backdrop {
   position: fixed;
@@ -268,6 +255,114 @@
 .ui-field input:focus {
   outline: 2px solid var(--accent-border);
   outline-offset: 1px;
+}
+
+/* Native select: match .ui-input surface + chevron */
+.ui-select {
+  display: inline-block;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 2rem 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background-color: var(--code-bg);
+  color: var(--text-h);
+  font-size: 0.92rem;
+  line-height: 1.35;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6375' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  background-size: 0.65rem;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ui-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  }
+}
+
+.ui-select:hover {
+  border-color: var(--accent-border);
+}
+
+.ui-select:focus {
+  outline: 2px solid var(--accent-border);
+  outline-offset: 1px;
+}
+
+/* On/off control (matches buttons / accent) */
+.ui-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+.ui-switch__track {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 1.35rem;
+}
+
+.ui-switch__input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.ui-switch__slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border);
+  border-radius: 999px;
+  transition: background 0.18s ease;
+  pointer-events: none;
+}
+
+.ui-switch__slider::after {
+  content: "";
+  position: absolute;
+  width: 1.05rem;
+  height: 1.05rem;
+  left: 0.15rem;
+  top: 0.15rem;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.18s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+.ui-switch__input:checked ~ .ui-switch__slider {
+  background: var(--accent);
+}
+
+.ui-switch__input:checked ~ .ui-switch__slider::after {
+  transform: translateX(1.1rem);
+}
+
+.ui-switch__input:focus-visible ~ .ui-switch__slider {
+  outline: 2px solid var(--accent-border);
+  outline-offset: 2px;
+}
+
+.ui-switch__label {
+  line-height: 1.2;
 }
 
 /* —— Feedback —— */

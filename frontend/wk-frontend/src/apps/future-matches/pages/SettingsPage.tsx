@@ -200,7 +200,7 @@ export default function SettingsPage() {
   return (
     <div className="app-page ui-page--constrained fm-page">
       <div className="ui-page-header">
-        <div>
+        <div className="ui-page-header__intro">
           <h1>Followed games &amp; teams</h1>
           <p className="ui-lead">
             Add Liquipedia <strong>team page IDs</strong> (URL title, e.g.{" "}
@@ -210,14 +210,17 @@ export default function SettingsPage() {
             Liquipedia.
           </p>
         </div>
-        <button
-          type="button"
-          className="ui-btn ui-btn--primary"
-          onClick={() => void onSave()}
-          disabled={saving}
-        >
-          {saving ? "Saving…" : "Save"}
-        </button>
+        <div className="ui-page-actions">
+          <button
+            type="button"
+            className="ui-btn ui-btn--primary"
+            onClick={() => void onSave()}
+            disabled={saving}
+            title="Save games and teams to the server. Use Upcoming → Refresh afterward to recrawl Liquipedia."
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
       </div>
 
       {error != null && <p className="ui-error">{error}</p>}
@@ -227,10 +230,11 @@ export default function SettingsPage() {
         <h2 className="fm-settings-h2">Add a game</h2>
         <div className="fm-settings-add-row">
           <select
-            className="fm-settings-select"
+            className="ui-select fm-settings-select"
             value={addSelectId}
             onChange={(e) => setAddSelectId(e.target.value)}
             aria-label="Pick a preset wiki"
+            title="Choose a preset Liquipedia wiki, then click Add."
           >
             <option value="">Preset wikis…</option>
             {availableKnown.map((k) => (
@@ -244,6 +248,7 @@ export default function SettingsPage() {
             className="ui-btn"
             onClick={addGameFromSelect}
             disabled={addSelectId === ""}
+            title="Add the selected wiki to your followed games (not saved until Save)."
           >
             Add
           </button>
@@ -258,7 +263,12 @@ export default function SettingsPage() {
             maxLength={40}
             aria-label="Custom wiki id"
           />
-          <button type="button" className="ui-btn" onClick={addGameCustom}>
+          <button
+            type="button"
+            className="ui-btn"
+            onClick={addGameCustom}
+            title="Add a game by custom Liquipedia wiki id (slug, e.g. smash)."
+          >
             Add custom
           </button>
         </div>
@@ -279,6 +289,7 @@ export default function SettingsPage() {
                   type="button"
                   className="ui-btn ui-btn--danger"
                   onClick={() => removeGame(g.id)}
+                  title="Remove this game from the list (click Save to persist)."
                 >
                   Remove game
                 </button>
@@ -303,6 +314,7 @@ export default function SettingsPage() {
                   className="ui-btn"
                   disabled={bannerBusyId === g.id}
                   onClick={() => startBannerPick(g.id)}
+                  title="Choose an image file to use as this game’s banner in the UI."
                 >
                   {bannerBusyId === g.id ? "Working…" : "Upload banner"}
                 </button>
@@ -312,6 +324,7 @@ export default function SettingsPage() {
                     className="ui-btn ui-btn--danger"
                     disabled={bannerBusyId === g.id}
                     onClick={() => void onRemoveBanner(g.id)}
+                    title="Remove the custom banner for this game."
                   >
                     Remove banner
                   </button>
@@ -325,6 +338,7 @@ export default function SettingsPage() {
                       type="button"
                       className="fm-tag-remove"
                       aria-label={`Remove ${t}`}
+                      title={`Remove ${t} from this game’s follow list.`}
                       onClick={() => removeTeam(g.id, t)}
                     >
                       ×
@@ -354,6 +368,7 @@ export default function SettingsPage() {
                   type="button"
                   className="ui-btn"
                   onClick={() => addTeam(g.id)}
+                  title="Add the team page id from the field to this game’s follow list."
                 >
                   Add team
                 </button>

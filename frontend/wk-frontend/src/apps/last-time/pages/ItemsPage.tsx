@@ -56,11 +56,21 @@ export default function ItemsPage() {
   return (
     <div className="app-page ui-page--constrained">
       <div className="ui-page-header">
-        <div>
+        <div className="ui-page-header__intro">
           <h1>Last time I changed</h1>
           <p className="ui-lead">
             Track linens, sponges, and anything you replace on a schedule.
           </p>
+        </div>
+        <div className="ui-page-actions">
+          <button
+            type="button"
+            className="ui-btn ui-btn--primary"
+            onClick={openAdd}
+            title="Create a new tracked item (opens the editor)."
+          >
+            Add item
+          </button>
         </div>
       </div>
 
@@ -103,6 +113,7 @@ export default function ItemsPage() {
                 type="button"
                 className="ui-btn ui-btn--primary"
                 onClick={(e) => void markNow(e, item)}
+                title={`Record a change for ${item.name} now (adds a timestamp).`}
               >
                 Mark now
               </button>
@@ -110,15 +121,6 @@ export default function ItemsPage() {
           </article>
         ))}
       </div>
-
-      <button
-        type="button"
-        className="ui-fab"
-        aria-label="Add item"
-        onClick={openAdd}
-      >
-        +
-      </button>
 
       <ItemEditorModal
         open={modalOpen}

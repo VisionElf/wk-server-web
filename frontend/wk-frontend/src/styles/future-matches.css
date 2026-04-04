@@ -215,9 +215,9 @@
   max-width: 360px;
 }
 
+/* Width only; surface comes from .ui-select (ui.css) */
 .fm-settings-select {
   min-width: 220px;
-  max-width: 100%;
 }
 
 .fm-settings-games {

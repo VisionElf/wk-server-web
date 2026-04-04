@@ -86,7 +86,7 @@ export default function PageCachePage() {
   return (
     <div className="app-page ui-page--constrained fm-page">
       <div className="ui-page-header">
-        <div>
+        <div className="ui-page-header__intro">
           <h1>Page cache</h1>
           <p className="ui-lead">
             Liquipedia HTML pages (TTL from settings) and cached images served
@@ -94,9 +94,16 @@ export default function PageCachePage() {
             fresh copy immediately.
           </p>
         </div>
-        <button type="button" className="ui-btn" onClick={() => void load()}>
-          Reload
-        </button>
+        <div className="ui-page-actions">
+          <button
+            type="button"
+            className="ui-btn"
+            onClick={() => void load()}
+            title="Fetch the latest cache entry lists from the server."
+          >
+            Reload
+          </button>
+        </div>
       </div>
 
       <div className="fm-cache-tabs" role="tablist" aria-label="Cache type">
@@ -106,6 +113,7 @@ export default function PageCachePage() {
           className="fm-cache-tabs__btn"
           aria-selected={tab === "html"}
           onClick={() => setTab("html")}
+          title="List cached Liquipedia HTML pages."
         >
           HTML
         </button>
@@ -115,6 +123,7 @@ export default function PageCachePage() {
           className="fm-cache-tabs__btn"
           aria-selected={tab === "img"}
           onClick={() => setTab("img")}
+          title="List cached image files used for team visuals."
         >
           Images
         </button>
@@ -155,6 +164,7 @@ export default function PageCachePage() {
                           className="ui-btn ui-btn--small"
                           disabled={refetchingKey === `h:${r.url}`}
                           onClick={() => void onRefetchHtml(r.url)}
+                          title="Download this page again from Liquipedia and replace the cached HTML."
                         >
                           {refetchingKey === `h:${r.url}`
                             ? "…"
@@ -231,8 +241,8 @@ export default function PageCachePage() {
                             }
                             title={
                               canRefetch
-                                ? undefined
-                                : "Source URL unknown for this file; run a full refresh to store metadata."
+                                ? "Re-download this image from its source URL."
+                                : "Source URL unknown for this file; run Upcoming → Refresh to store metadata."
                             }
                             onClick={() => {
                               if (r.sourceUrl != null) {

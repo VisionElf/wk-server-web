@@ -11,5 +11,6 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# FutureMatches cache only if you run the API on the host (dotnet run). With Docker Compose, files stay in the named volume, not under this repo path.
+# FutureMatches cache only if you run the API on the host (dotnet run).
+# With Docker Compose, files stay in the named volume, not under this repo path.
 backend/WkApi/Apps/FutureMatches/Cache/**

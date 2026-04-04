@@ -74,7 +74,7 @@ export default function ConsolePage() {
   return (
     <div className="app-page ui-page--constrained console-page">
       <div className="ui-page-header">
-        <div>
+        <div className="ui-page-header__intro">
           <h1>Console</h1>
           <p className="ui-lead">
             Server log buffer (Information+; verbose Microsoft.* below Warning is
@@ -83,14 +83,23 @@ export default function ConsolePage() {
             {pollMs / 1000}s.
           </p>
         </div>
-        <label className="console-page__pause">
-          <input
-            type="checkbox"
-            checked={paused}
-            onChange={(e) => setPaused(e.target.checked)}
-          />
-          Pause
-        </label>
+        <div className="ui-page-actions">
+          <label
+            className="ui-switch"
+            title="When on, stop polling the server for new log lines (current text stays)."
+          >
+            <span className="ui-switch__track">
+              <input
+                className="ui-switch__input"
+                type="checkbox"
+                checked={paused}
+                onChange={(e) => setPaused(e.target.checked)}
+              />
+              <span className="ui-switch__slider" aria-hidden />
+            </span>
+            <span className="ui-switch__label">Pause</span>
+          </label>
+        </div>
       </div>
       {error != null && <p className="ui-error">{error}</p>}
       <textarea
