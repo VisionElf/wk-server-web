@@ -1,6 +1,6 @@
 import { dashboardApp } from "../apps/dashboard/app.config";
+import { lastTimeApp } from "../apps/last-time/app.config";
 import { operationsApp } from "../apps/operations/app.config";
-import { workspaceApp } from "../apps/workspace/app.config";
 import type { SubAppDefinition } from "./subAppTypes";
 
 /**
@@ -9,7 +9,7 @@ import type { SubAppDefinition } from "./subAppTypes";
 export const subApps: SubAppDefinition[] = [
   dashboardApp,
   operationsApp,
-  workspaceApp,
+  lastTimeApp,
 ];
 
 /** First-time and fallback redirect (keep in sync with router index route). */
