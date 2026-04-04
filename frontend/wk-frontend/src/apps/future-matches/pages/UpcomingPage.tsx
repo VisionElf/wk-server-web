@@ -269,7 +269,7 @@ function WhenCell({
 
   return (
     <td className="fm-when-cell">
-      <span className="fm-when-cell__static">{formatWhen(m)}</span>
+      <span className="fm-when-cell__static"><b>{formatWhen(m)}</b></span>
       {showTimer ? (
         <WhenLiveLine mode={countdownMode} dateUnix={unix} />
       ) : countdownMode !== "none" ? (
