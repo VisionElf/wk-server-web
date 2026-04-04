@@ -1,18 +1,20 @@
-import { dashboardApp } from "../apps/dashboard/app.config";
-import { futureMatchesApp } from "../apps/future-matches/app.config";
-import { lastTimeApp } from "../apps/last-time/app.config";
-import { operationsApp } from "../apps/operations/app.config";
-import type { SubAppDefinition } from "./subAppTypes";
+import { futureMatchesSubApp } from "../apps/future-matches/subApp";
+import { lastTimeSubApp } from "../apps/last-time/subApp";
+import type { SubAppDefinition, SubAppRegistration } from "./subAppTypes";
 
 /**
- * Ordered list of sub-apps (sidebar). Add new apps here and register their routes in `router.tsx`.
+ * Ordered list of sub-apps (sidebar + router). Add or remove entries here only.
  */
-export const subApps: SubAppDefinition[] = [
-  dashboardApp,
-  operationsApp,
-  lastTimeApp,
-  futureMatchesApp,
+export const subAppRegistrations: SubAppRegistration[] = [
+  lastTimeSubApp,
+  futureMatchesSubApp,
 ];
+
+export const subApps: SubAppDefinition[] = subAppRegistrations.map(
+  (r) => r.definition,
+);
+
+export const subAppRoutes = subAppRegistrations.map((r) => r.routes);
 
 /** First-time and fallback redirect (keep in sync with router index route). */
 export const defaultLandingPath =

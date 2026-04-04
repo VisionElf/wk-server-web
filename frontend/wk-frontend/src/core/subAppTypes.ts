@@ -1,3 +1,5 @@
+import type { RouteObject } from "react-router-dom";
+
 /** One tab / section inside a sub-app (top navigation). */
 export type SubAppNavItem = {
   segment: string;
@@ -12,4 +14,10 @@ export type SubAppDefinition = {
   pathPrefix: string;
   /** Sections for the top bar; empty = no top bar for that app. */
   subNav: SubAppNavItem[];
+};
+
+/** One sub-app: metadata + router branch (register in `appRegistry.ts` only). */
+export type SubAppRegistration = {
+  definition: SubAppDefinition;
+  routes: RouteObject;
 };
