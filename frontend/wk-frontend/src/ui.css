@@ -311,3 +311,7 @@
 .ui-table tbody tr:hover:not(.fm-row--game-art) {
   background: var(--accent-bg);
 }
+
+.ui-table tbody tr.fm-row--game-art:hover {
+  filter: brightness(0.97);
+}

@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  deleteFutureGameBanner,
   fetchFutureSettings,
   saveFutureSettings,
+  uploadFutureGameBanner,
   type FutureGameSettings,
   type FutureKnownGame,
+  type FutureSettingsResponse,
 } from "../api/client";
 import "../future-matches.css";
 
@@ -27,6 +30,9 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedOk, setSavedOk] = useState(false);
+  const [bannerBusyId, setBannerBusyId] = useState<string | null>(null);
+  const bannerPickGameId = useRef<string | null>(null);
+  const bannerFileInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -38,6 +44,7 @@ export default function SettingsPage() {
         data.games.map((g) => ({
           id: g.id,
           followTeamIds: [...g.followTeamIds],
+          customBannerUrl: g.customBannerUrl ?? null,
         })),
       );
     } catch (e) {
@@ -123,18 +130,67 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       const data = await saveFutureSettings(games);
-      setKnownGames(data.knownGames);
-      setGames(
-        data.games.map((g) => ({
-          id: g.id,
-          followTeamIds: [...g.followTeamIds],
-        })),
-      );
+      applySettingsFromResponse(data);
       setSavedOk(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Save failed");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const applySettingsFromResponse = (data: FutureSettingsResponse) => {
+    setKnownGames(data.knownGames);
+    setGames(
+      data.games.map((g) => ({
+        id: g.id,
+        followTeamIds: [...g.followTeamIds],
+        customBannerUrl: g.customBannerUrl ?? null,
+      })),
+    );
+  };
+
+  const startBannerPick = (gameId: string) => {
+    bannerPickGameId.current = gameId;
+    bannerFileInputRef.current?.click();
+  };
+
+  const onBannerFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const gameId = bannerPickGameId.current;
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    bannerPickGameId.current = null;
+    if (gameId == null || file == null) {
+      return;
+    }
+    setError(null);
+    setSavedOk(false);
+    setBannerBusyId(gameId);
+    try {
+      const data = await uploadFutureGameBanner(gameId, file);
+      applySettingsFromResponse(data);
+      setSavedOk(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setBannerBusyId(null);
+    }
+  };
+
+  const onRemoveBanner = async (gameId: string) => {
+    setError(null);
+    setSavedOk(false);
+    setBannerBusyId(gameId);
+    try {
+      const data = await deleteFutureGameBanner(gameId);
+      applySettingsFromResponse(data);
+      setSavedOk(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Remove banner failed");
+    } finally {
+      setBannerBusyId(null);
     }
   };
 
@@ -232,6 +288,36 @@ export default function SettingsPage() {
                 Page title segment from the team wiki URL (underscores, not
                 spaces).
               </p>
+              <div className="fm-settings-banner-row">
+                {g.customBannerUrl != null && g.customBannerUrl !== "" ? (
+                  <img
+                    className="fm-settings-banner-preview"
+                    src={g.customBannerUrl}
+                    alt=""
+                    width={160}
+                    height={48}
+                    loading="lazy"
+                  />
+                ) : null}
+                <button
+                  type="button"
+                  className="ui-btn"
+                  disabled={bannerBusyId === g.id}
+                  onClick={() => startBannerPick(g.id)}
+                >
+                  {bannerBusyId === g.id ? "Working…" : "Upload banner"}
+                </button>
+                {g.customBannerUrl != null && g.customBannerUrl !== "" ? (
+                  <button
+                    type="button"
+                    className="ui-btn ui-btn--danger"
+                    disabled={bannerBusyId === g.id}
+                    onClick={() => void onRemoveBanner(g.id)}
+                  >
+                    Remove banner
+                  </button>
+                ) : null}
+              </div>
               <div className="fm-tag-row" role="list">
                 {g.followTeamIds.map((t) => (
                   <span key={t} className="fm-tag" role="listitem">
@@ -277,6 +363,15 @@ export default function SettingsPage() {
           ))
         )}
       </div>
+      <input
+        ref={bannerFileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+        className="fm-file-input-hidden"
+        aria-hidden
+        tabIndex={-1}
+        onChange={(e) => void onBannerFileChange(e)}
+      />
     </div>
   );
 }

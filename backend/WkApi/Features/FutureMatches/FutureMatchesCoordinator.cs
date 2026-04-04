@@ -6,17 +6,20 @@ public class FutureMatchesCoordinator
     private readonly FutureMatchesCrawlService _crawl;
     private readonly FutureMatchesImageCache _images;
     private readonly FutureMatchesCrawlProgress _crawlProgress;
+    private readonly FutureMatchesUserBannerStore _userBanners;
 
     public FutureMatchesCoordinator(
         FutureMatchesCacheStore store,
         FutureMatchesCrawlService crawl,
         FutureMatchesImageCache images,
-        FutureMatchesCrawlProgress crawlProgress)
+        FutureMatchesCrawlProgress crawlProgress,
+        FutureMatchesUserBannerStore userBanners)
     {
         _store = store;
         _crawl = crawl;
         _images = images;
         _crawlProgress = crawlProgress;
+        _userBanners = userBanners;
     }
 
     public async Task<FutureMatchesPayloadDto> GetCachedAsync(CancellationToken ct = default)
@@ -33,6 +36,7 @@ public class FutureMatchesCoordinator
             await _store.WriteAsync(payload, ct).ConfigureAwait(false);
         }
 
+        ApplyUserBanners(payload);
         return payload;
     }
 
@@ -54,15 +58,31 @@ public class FutureMatchesCoordinator
             };
             await _store.WriteAsync(toStore, ct).ConfigureAwait(false);
 
-            return new FutureMatchesPayloadDto {
+            var result = new FutureMatchesPayloadDto {
                 LastUpdatedUtc = toStore.LastUpdatedUtc,
                 Matches = toStore.Matches,
                 GameVisuals = toStore.GameVisuals,
                 RefreshErrors = errors.Count > 0 ? errors : null,
             };
+            ApplyUserBanners(result);
+            return result;
         }
         finally {
             _crawlProgress.EndCrawl();
+        }
+    }
+
+    private void ApplyUserBanners(FutureMatchesPayloadDto payload)
+    {
+        if (payload.GameVisuals == null || payload.GameVisuals.Count == 0) {
+            return;
+        }
+
+        foreach (var gv in payload.GameVisuals) {
+            var url = _userBanners.GetPublicUrlIfExists(gv.Game);
+            if (url != null) {
+                gv.Banner = url;
+            }
         }
     }
 }

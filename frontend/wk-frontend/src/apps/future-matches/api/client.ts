@@ -120,6 +120,7 @@ export async function fetchFutureMatchesCrawlProgress(): Promise<FutureMatchesCr
 export type FutureGameSettings = {
   id: string;
   followTeamIds: string[];
+  customBannerUrl?: string | null;
 };
 
 export type FutureKnownGame = {
@@ -146,16 +147,49 @@ export async function saveFutureSettings(
     body: JSON.stringify({ games }),
   });
   if (!res.ok) {
-    let msg = res.statusText;
-    try {
-      const j = (await res.json()) as { message?: string };
-      if (j.message != null && j.message !== "") {
-        msg = j.message;
-      }
-    } catch {
-      /* ignore */
+    throw new Error(await parseSettingsError(res));
+  }
+  return res.json() as Promise<FutureSettingsResponse>;
+}
+
+async function parseSettingsError(res: Response): Promise<string> {
+  let msg = res.statusText;
+  try {
+    const j = (await res.json()) as { message?: string };
+    if (j.message != null && j.message !== "") {
+      msg = j.message;
     }
-    throw new Error(msg);
+  } catch {
+    /* ignore */
+  }
+  return msg;
+}
+
+export async function uploadFutureGameBanner(
+  gameId: string,
+  file: File,
+): Promise<FutureSettingsResponse> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch(
+    `${base}/settings/games/${encodeURIComponent(gameId)}/banner`,
+    { method: "POST", body: fd },
+  );
+  if (!res.ok) {
+    throw new Error(await parseSettingsError(res));
+  }
+  return res.json() as Promise<FutureSettingsResponse>;
+}
+
+export async function deleteFutureGameBanner(
+  gameId: string,
+): Promise<FutureSettingsResponse> {
+  const res = await fetch(
+    `${base}/settings/games/${encodeURIComponent(gameId)}/banner`,
+    { method: "DELETE" },
+  );
+  if (!res.ok) {
+    throw new Error(await parseSettingsError(res));
   }
   return res.json() as Promise<FutureSettingsResponse>;
 }

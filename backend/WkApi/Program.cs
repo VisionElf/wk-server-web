@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using WkApi.Data;
 using WkApi.Data.Lti;
@@ -6,6 +7,9 @@ using WkApi.Infrastructure.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.Configure<FormOptions>(options => {
+    options.MultipartBodyLengthLimit = 3_145_728;
+});
 builder.Services.AddControllers();
 
 var serverLogBuffer = new ServerLogBuffer();
@@ -18,6 +22,7 @@ builder.Services.AddSingleton<FutureMatchesCacheStore>();
 builder.Services.AddSingleton<FutureMatchesPageCacheStore>();
 builder.Services.AddSingleton<FutureMatchesCrawlProgress>();
 builder.Services.AddSingleton<FutureMatchesSettingsStore>();
+builder.Services.AddSingleton<FutureMatchesUserBannerStore>();
 builder.Services.AddSingleton<FutureMatchesSettingsService>();
 builder.Services.AddHttpClient<FutureMatchesCrawlService>(client => {
     client.Timeout = TimeSpan.FromSeconds(90);

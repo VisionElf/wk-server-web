@@ -55,7 +55,7 @@
 }
 
 /* Fixed layout + same widths on th/td so header and body columns line up.
-   separate + 0 spacing: row backgrounds (banner) paint reliably; collapse often clips tr backgrounds. */
+   separate + 0 spacing: reliable row backgrounds (banner under cells). */
 .fm-table.ui-table {
   table-layout: fixed;
   border-collapse: separate;
@@ -94,8 +94,8 @@
 }
 
 /*
-  Full-row banner: background on <tr> (layered gradient + cover image).
-  Set --fm-row-bg-image on tr via inline style. Avoid position/z-index on tr/td (breaks table layout).
+  Row art: background on <tr> (gradient scrim + image). Image is small, right-aligned — not full-width block.
+  Set --fm-row-bg-image on tr via inline style.
 */
 .fm-table tbody tr.fm-row {
   --fm-row-bg-image: none;
@@ -103,32 +103,16 @@
 
 .fm-table tbody tr.fm-row.fm-row--game-art {
   background-image: linear-gradient(
-    100deg,
+    300deg,
+    var(--bg) 42%,
     var(--bg) 0%,
-    var(--bg) 18%,
-    rgba(255, 255, 255, 0.55) 55%,
-    rgba(255, 255, 255, 0.2) 100%
+    color-mix(in srgb, var(--bg) 70%, transparent) 65%,
+    color-mix(in srgb, var(--bg) 90%, transparent) 100%
   ),
     var(--fm-row-bg-image);
-  background-size: 100% 100%, cover;
-  background-position: 0 0, center center;
+  background-size: 100%, 100%, auto 48px;
+  background-position: 0, -18.7rem;
   background-repeat: no-repeat;
-}
-
-@media (prefers-color-scheme: dark) {
-  .fm-table tbody tr.fm-row.fm-row--game-art {
-    background-image: linear-gradient(
-      100deg,
-      var(--bg) 0%,
-      var(--bg) 18%,
-      rgba(0, 0, 0, 0.5) 55%,
-      rgba(0, 0, 0, 0.15) 100%
-    ),
-      var(--fm-row-bg-image);
-    background-size: 100% 100%, cover;
-    background-position: 0 0, center center;
-    background-repeat: no-repeat;
-  }
 }
 
 .fm-table tbody tr.fm-row.fm-row--game-art > td {
@@ -284,6 +268,38 @@
   font-size: 0.85rem !important;
 }
 
+.fm-settings-banner-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0 0 0.65rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.fm-settings-banner-preview {
+  display: block;
+  width: 160px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--social-bg);
+}
+
+.fm-file-input-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .fm-settings-team-row {
   display: flex;
   flex-wrap: wrap;
@@ -359,15 +375,54 @@
   opacity: 0.85;
 }
 
-.fm-countdown {
+/* When column: stable two-line block so live text updates don’t shift row height. */
+.fm-when-cell {
+  vertical-align: middle;
+}
+
+.fm-when-cell__static {
   display: block;
-  margin-top: 0.25rem;
+  line-height: 1.35;
+}
+
+.fm-countdown-slot {
+  display: block;
+  margin-top: 0.2rem;
+  min-height: calc(0.82rem * 1.35);
+  line-height: 1.35;
+  box-sizing: content-box;
+}
+
+.fm-countdown-slot .fm-countdown {
+  display: inline-block;
   font-size: 0.82rem;
   font-variant-numeric: tabular-nums;
   color: var(--text);
   opacity: 0.9;
+  white-space: nowrap;
+  vertical-align: top;
+  line-height: 1.35;
 }
 
+/* Reserve width so digits / date changes don’t reflow the row horizontally. */
+.fm-countdown-slot--today {
+  min-width: 11.5ch;
+}
+
+.fm-countdown-slot--week {
+  min-width: 8ch;
+}
+
+.fm-countdown-slot--later {
+  min-width: 9.5rem;
+}
+
+.fm-countdown-slot--empty .fm-countdown--placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.fm-countdown-slot--started .fm-countdown,
 .fm-countdown--started {
   color: var(--accent);
   font-weight: 500;

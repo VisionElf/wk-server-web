@@ -28,16 +28,19 @@ public class FutureMatchesSettingsService
     };
 
     private readonly FutureMatchesSettingsStore _store;
+    private readonly FutureMatchesUserBannerStore _userBanners;
     private readonly IOptions<FutureMatchesOptions> _options;
     private readonly ILogger<FutureMatchesSettingsService> _logger;
     private readonly SemaphoreSlim _seedLock = new(1, 1);
 
     public FutureMatchesSettingsService(
         FutureMatchesSettingsStore store,
+        FutureMatchesUserBannerStore userBanners,
         IOptions<FutureMatchesOptions> options,
         ILogger<FutureMatchesSettingsService> logger)
     {
         _store = store;
+        _userBanners = userBanners;
         _options = options;
         _logger = logger;
     }
@@ -57,10 +60,17 @@ public class FutureMatchesSettingsService
     public async Task<FutureMatchesSettingsApiDto> GetForApiAsync(CancellationToken ct = default)
     {
         var data = await GetOrSeedAsync(ct).ConfigureAwait(false);
-        return new FutureMatchesSettingsApiDto {
-            Games = data.Games,
-            KnownGames = GetKnownGames(),
-        };
+        return ToSettingsApiDto(data);
+    }
+
+    public async Task<bool> HasGameAsync(string gameId, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(gameId)) {
+            return false;
+        }
+
+        var data = await GetOrSeedAsync(ct).ConfigureAwait(false);
+        return data.Games.Any(g => g.Id.Equals(gameId.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 
     public async Task<FutureMatchesSettingsApiDto> SaveAsync(
@@ -72,8 +82,20 @@ public class FutureMatchesSettingsService
         StripLegacyFollowTeamsForSave(incoming);
         await _store.WriteAsync(incoming, ct).ConfigureAwait(false);
         _logger.LogInformation("FutureMatches settings saved ({Count} games)", incoming.Games.Count);
+        return ToSettingsApiDto(incoming);
+    }
+
+    private FutureMatchesSettingsApiDto ToSettingsApiDto(FutureMatchesUserSettingsFileDto data)
+    {
+        var games = data.Games
+            .Select(g => new FutureMatchesGameSettingsApiDto(
+                g.Id,
+                [..g.FollowTeamIds],
+                _userBanners.GetPublicUrlIfExists(g.Id)))
+            .ToList();
+
         return new FutureMatchesSettingsApiDto {
-            Games = incoming.Games,
+            Games = games,
             KnownGames = GetKnownGames(),
         };
     }
@@ -226,6 +248,11 @@ public record FutureMatchesKnownGameDto(string Id, string Label);
 
 public class FutureMatchesSettingsApiDto
 {
-    public List<FutureMatchesGameOptions> Games { get; set; } = [];
+    public List<FutureMatchesGameSettingsApiDto> Games { get; set; } = [];
     public IReadOnlyList<FutureMatchesKnownGameDto> KnownGames { get; set; } = [];
 }
+
+public record FutureMatchesGameSettingsApiDto(
+    string Id,
+    IReadOnlyList<string> FollowTeamIds,
+    string? CustomBannerUrl);

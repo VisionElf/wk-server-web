@@ -13,6 +13,7 @@ public class FutureMatchesController : ControllerBase
     private readonly FutureMatchesPageCacheStore _pageCacheStore;
     private readonly FutureMatchesCrawlProgress _crawlProgress;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly FutureMatchesUserBannerStore _userBanners;
 
     public FutureMatchesController(
         FutureMatchesCoordinator coordinator,
@@ -20,7 +21,8 @@ public class FutureMatchesController : ControllerBase
         FutureMatchesSettingsService settings,
         FutureMatchesPageCacheStore pageCacheStore,
         FutureMatchesCrawlProgress crawlProgress,
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory,
+        FutureMatchesUserBannerStore userBanners)
     {
         _coordinator = coordinator;
         _imageCache = imageCache;
@@ -28,6 +30,7 @@ public class FutureMatchesController : ControllerBase
         _pageCacheStore = pageCacheStore;
         _crawlProgress = crawlProgress;
         _httpClientFactory = httpClientFactory;
+        _userBanners = userBanners;
     }
 
     [HttpGet]
@@ -151,6 +154,73 @@ public class FutureMatchesController : ControllerBase
         catch (ArgumentException ex) {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    [HttpPost("settings/games/{gameId}/banner")]
+    [RequestSizeLimit(3_145_728)]
+    public async Task<ActionResult<FutureMatchesSettingsApiDto>> UploadGameBanner(
+        string gameId,
+        IFormFile? file,
+        CancellationToken ct)
+    {
+        if (file == null || file.Length == 0) {
+            return BadRequest(new { message = "No file uploaded." });
+        }
+
+        if (file.Length > 3_145_728) {
+            return BadRequest(new { message = "File too large (max 3 MB)." });
+        }
+
+        if (!FutureMatchesUserBannerStore.TryNormalizeGameId(gameId, out var id)) {
+            return BadRequest(new { message = "Invalid game id." });
+        }
+
+        if (!await _settings.HasGameAsync(id, ct).ConfigureAwait(false)) {
+            return NotFound(new { message = "Unknown game." });
+        }
+
+        string ext;
+        try {
+            ext = FutureMatchesUserBannerStore.PickExtensionFromContentType(file.ContentType);
+        }
+        catch (ArgumentException) {
+            return BadRequest(new { message = "Use PNG, JPEG, WebP, or GIF." });
+        }
+
+        await using (var stream = file.OpenReadStream())
+        await _userBanners.SaveAsync(id, stream, ext, ct).ConfigureAwait(false);
+
+        var data = await _settings.GetForApiAsync(ct).ConfigureAwait(false);
+        return Ok(data);
+    }
+
+    [HttpDelete("settings/games/{gameId}/banner")]
+    public async Task<ActionResult<FutureMatchesSettingsApiDto>> DeleteGameBanner(
+        string gameId,
+        CancellationToken ct)
+    {
+        if (!FutureMatchesUserBannerStore.TryNormalizeGameId(gameId, out var id)) {
+            return BadRequest(new { message = "Invalid game id." });
+        }
+
+        if (!await _settings.HasGameAsync(id, ct).ConfigureAwait(false)) {
+            return NotFound(new { message = "Unknown game." });
+        }
+
+        _userBanners.DeleteAllForGame(id);
+        var data = await _settings.GetForApiAsync(ct).ConfigureAwait(false);
+        return Ok(data);
+    }
+
+    [HttpGet("user-banners/{gameId}")]
+    public IActionResult GetUserBanner(string gameId)
+    {
+        if (!_userBanners.TryGetPhysicalPath(gameId, out var path, out var fileName)) {
+            return NotFound();
+        }
+
+        var contentType = FutureMatchesUserBannerStore.GetContentTypeForFileName(fileName);
+        return PhysicalFile(path, contentType);
     }
 
     [HttpGet("media/{fileName}")]

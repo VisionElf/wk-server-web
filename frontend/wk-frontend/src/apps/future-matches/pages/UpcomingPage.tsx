@@ -102,22 +102,85 @@ function useIntervalTick(ms: number): number {
   return tick;
 }
 
-function LiveCountdown({ dateUnix }: { dateUnix: number }) {
-  const tick = useIntervalTick(1000);
-  const targetMs = dateUnix * 1000;
-  const delta = targetMs - Date.now();
-  if (delta <= 0) {
-    return <span className="fm-countdown fm-countdown--started">Started</span>;
+type CountdownMode = "today" | "week" | "later";
+
+const MS_DAY = 86_400_000;
+const MS_HOUR = 3_600_000;
+
+function formatLiveToday(deltaMs: number): string {
+  if (deltaMs <= 0) {
+    return "Started";
   }
-  const s = Math.floor(delta / 1000);
+  const s = Math.floor(deltaMs / 1000);
   const h = Math.floor(s / 3600);
   const mi = Math.floor((s % 3600) / 60);
   const sec = s % 60;
-  void tick;
+  const hh = h.toString();
+  const mm = mi.toString().padStart(2, "0");
+  const ss = sec.toString().padStart(2, "0");
+  return `${hh}h ${mm}m ${ss}s`;
+}
+
+function formatLiveWeek(deltaMs: number): string {
+  if (deltaMs <= 0) {
+    return "Started";
+  }
+  const d = Math.floor(deltaMs / MS_DAY);
+  const h = Math.floor((deltaMs % MS_DAY) / MS_HOUR);
+  return `${d}d ${h}h`;
+}
+
+function formatLiveLater(dateUnix: number, nowMs: number): string {
+  const targetMs = dateUnix * 1000;
+  if (targetMs <= nowMs) {
+    return "Started";
+  }
+  const d = new Date(targetMs);
+  const now = new Date(nowMs);
+  const opts: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+  };
+  if (d.getFullYear() !== now.getFullYear()) {
+    opts.year = "numeric";
+  }
+  return d.toLocaleDateString(undefined, opts);
+}
+
+function WhenLiveLine({
+  mode,
+  dateUnix,
+}: {
+  mode: CountdownMode;
+  dateUnix: number;
+}) {
+  const tickFast = useIntervalTick(1000);
+  const tickSlow = useIntervalTick(60_000);
+  void (mode === "later" ? tickSlow : tickFast);
+
+  const nowMs = Date.now();
+  const targetMs = dateUnix * 1000;
+  const deltaMs = targetMs - nowMs;
+
+  let text: string;
+  if (mode === "today") {
+    text = formatLiveToday(deltaMs);
+  } else if (mode === "week") {
+    text = formatLiveWeek(deltaMs);
+  } else {
+    text = formatLiveLater(dateUnix, nowMs);
+  }
+
+  const started = text === "Started";
   return (
-    <span className="fm-countdown">
-      {h > 0 ? `${h}h ` : ""}
-      {mi}m {sec.toString().padStart(2, "0")}s
+    <span
+      className={`fm-countdown-slot fm-countdown-slot--${mode}${
+        started ? " fm-countdown-slot--started" : ""
+      }`}
+    >
+      <span className={`fm-countdown${started ? " fm-countdown--started" : ""}`}>
+        {text}
+      </span>
     </span>
   );
 }
@@ -192,22 +255,31 @@ function GameCell({
 
 function WhenCell({
   m,
-  showLiveCountdown,
+  countdownMode,
 }: {
   m: FutureMatchItem;
-  showLiveCountdown: boolean;
+  countdownMode: CountdownMode | "none";
 }) {
   const unix = m.dateUnix;
   const showTimer =
-    showLiveCountdown &&
+    countdownMode !== "none" &&
     itemKind(m) === "match" &&
     unix != null &&
     unix > 0;
 
   return (
-    <td>
-      {formatWhen(m)}
-      {showTimer ? <LiveCountdown dateUnix={unix} /> : null}
+    <td className="fm-when-cell">
+      <span className="fm-when-cell__static">{formatWhen(m)}</span>
+      {showTimer ? (
+        <WhenLiveLine mode={countdownMode} dateUnix={unix} />
+      ) : countdownMode !== "none" ? (
+        <span
+          className={`fm-countdown-slot fm-countdown-slot--${countdownMode} fm-countdown-slot--empty`}
+          aria-hidden="true"
+        >
+          <span className="fm-countdown fm-countdown--placeholder">&nbsp;</span>
+        </span>
+      ) : null}
     </td>
   );
 }
@@ -215,12 +287,12 @@ function WhenCell({
 function MatchTableSection({
   title,
   rows,
-  showLiveCountdown,
+  countdownMode,
   visualByGame,
 }: {
   title: string;
   rows: FutureMatchItem[];
-  showLiveCountdown: boolean;
+  countdownMode: CountdownMode | "none";
   visualByGame: Map<string, FutureMatchGameVisual>;
 }) {
   return (
@@ -247,34 +319,39 @@ function MatchTableSection({
                 const visual = visualByGame.get(m.game.toLowerCase());
                 const hasBanner =
                   visual?.banner != null && visual.banner !== "";
+                const rowKey = `${itemKind(m)}-${m.game}-${m.dateUnix ?? "x"}-${m.tournament?.href ?? ""}-${m.team1?.name ?? ""}-${i}`;
                 return (
-                <tr
-                  className={`fm-row${hasBanner ? " fm-row--game-art" : ""}`}
-                  data-fm-game={m.game}
-                  style={
-                    hasBanner
-                      ? ({
-                          ["--fm-row-bg-image" as string]: `url(${JSON.stringify(visual!.banner)})`,
-                        } as CSSProperties)
-                      : undefined
-                  }
-                  key={`${itemKind(m)}-${m.game}-${m.dateUnix ?? "x"}-${m.tournament?.href ?? ""}-${m.team1?.name ?? ""}-${i}`}
-                >
-                  <td>
-                    <GameCell m={m} visual={visual} />
-                  </td>
-                  <td>
-                    <TeamCell team={m.team1} />
-                  </td>
-                  <td>
-                    {itemKind(m) === "tournament" ? "—" : <TeamCell team={m.team2} />}
-                  </td>
-                  <WhenCell m={m} showLiveCountdown={showLiveCountdown} />
-                  <td>
-                    <TournamentCell m={m} />
-                  </td>
-                </tr>
-              );
+                  <tr
+                    key={rowKey}
+                    className={`fm-row${hasBanner ? " fm-row--game-art" : ""}`}
+                    data-fm-game={m.game}
+                    style={
+                      hasBanner
+                        ? ({
+                            ["--fm-row-bg-image" as string]: `url(${JSON.stringify(visual!.banner)})`,
+                          } as CSSProperties)
+                        : undefined
+                    }
+                  >
+                    <td>
+                      <GameCell m={m} visual={visual} />
+                    </td>
+                    <td>
+                      <TeamCell team={m.team1} />
+                    </td>
+                    <td>
+                      {itemKind(m) === "tournament" ? (
+                        "—"
+                      ) : (
+                        <TeamCell team={m.team2} />
+                      )}
+                    </td>
+                    <WhenCell m={m} countdownMode={countdownMode} />
+                    <td>
+                      <TournamentCell m={m} />
+                    </td>
+                  </tr>
+                );
               })}
             </tbody>
           </table>
@@ -413,10 +490,6 @@ export default function UpcomingPage() {
         <div>
           <h1>Upcoming matches</h1>
           <p className="ui-lead">
-            Filtered from Liquipedia using your followed team page IDs (see{" "}
-            <strong>Follow</strong>). Data is cached on the server — use Refresh
-            to recrawl. Teams with no listed match may show upcoming tournaments
-            from their wiki infobox.
           </p>
           {last != null && (
             <p className="ui-lead fm-last-up">
@@ -454,19 +527,19 @@ export default function UpcomingPage() {
           <MatchTableSection
             title="Today"
             rows={buckets.today}
-            showLiveCountdown
+            countdownMode="today"
             visualByGame={visualByGame}
           />
           <MatchTableSection
             title="Next 7 days"
             rows={buckets.week}
-            showLiveCountdown={false}
+            countdownMode="week"
             visualByGame={visualByGame}
           />
           <MatchTableSection
             title="Later"
             rows={buckets.later}
-            showLiveCountdown={false}
+            countdownMode="later"
             visualByGame={visualByGame}
           />
         </>

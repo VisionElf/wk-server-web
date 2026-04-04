@@ -7,8 +7,13 @@ services:
       - db
     expose:
       - "8080"
+    # Same port as `dotnet run` (vite.config proxy → localhost:5122) so you can use
+    # `docker compose up db api` + `npm run dev` and hit the container cache/DB.
+    ports:
+      - "5122:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
       ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=wkdb;Username=wkuser;Password=wkpassword
     volumes:
       # Persists Liquipedia JSON + cached team images across container restarts
