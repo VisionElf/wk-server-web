@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { addLtiEvent, fetchLtiItems, type LtiItem } from "../api/client";
 import { ItemEditorModal } from "../components/ItemEditorModal";
-import { formatDateLong, formatElapsed } from "../lib/formatElapsed";
+import { formatDateLong, formatElapsed } from "../utils/formatElapsed";
 import "../last-time.css";
 
 export default function ItemsPage() {
