@@ -31,7 +31,7 @@ The project is a **small, coherent home-server dashboard**: a React shell with p
 
 ### 2.3 Cross-cutting flows
 
-- **Future Matches:** Coordinator reads/writes JSON cache, crawl service parses Liquipedia HTML (AngleSharp), page cache + image cache persist under `Data/Cache/`. User banners stored on disk and overlaid on API responses.
+- **Future Matches:** Coordinator reads/writes JSON cache, crawl service parses Liquipedia HTML (AngleSharp), page cache + image cache persist under `Apps/FutureMatches/Cache/` (API content root). User banners stored on disk and overlaid on API responses.
 - **Server logs:** In-memory ring buffer (`ServerLogBuffer`) fed by a custom logger provider; exposed via `/api/server-logs` for the Console UI.
 
 ---

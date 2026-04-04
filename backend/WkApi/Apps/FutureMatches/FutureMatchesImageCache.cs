@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace WkApi.Apps.FutureMatches;
 
 /// <summary>
-/// Downloads remote image URLs once, stores under Data/Cache/img, serves via /api/future-matches/media/{file}.
+/// Downloads remote image URLs once, stores under Apps/FutureMatches/Cache/img (next to the JSON cache file), serves via /api/future-matches/media/{file}.
 /// Cached files are never expired or deleted by this service (permanent local copy once fetched).
 /// </summary>
 public class FutureMatchesImageCache

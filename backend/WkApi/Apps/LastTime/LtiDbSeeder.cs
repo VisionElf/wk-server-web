@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using WkApi.Apps.LastTime.Entities;
+using WkApi.Data;
 
-namespace WkApi.Data.Lti;
+namespace WkApi.Apps.LastTime;
 
 public static class LtiDbSeeder
 {

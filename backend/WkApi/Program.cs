@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using WkApi;
 using WkApi.Data;
-using WkApi.Data.Lti;
+using WkApi.Apps.LastTime;
 using WkApi.Apps.FutureMatches;
 using WkApi.Infrastructure.Files;
 using WkApi.Infrastructure.Logging;

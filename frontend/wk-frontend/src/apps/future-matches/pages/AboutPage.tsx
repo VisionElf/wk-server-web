@@ -19,8 +19,8 @@ export default function AboutPage() {
         and avoid excessive refresh.
       </p>
       <p className="ui-lead">
-        There is no database: results are stored in a JSON file on the API
-        server under <code>Data/Cache/</code>. Followed games and teams live in{" "}
+        Future Matches data is file-based (not in PostgreSQL): results are stored in a JSON file on the API
+        server under <code>Apps/FutureMatches/Cache/</code>. Followed games and teams live in{" "}
         <code>future-matches-settings.json</code> (editable from the{" "}
         <strong>Follow</strong> tab) as Liquipedia wiki IDs and team page titles
         (e.g. <code>Team_Vitality</code>). Team logos are downloaded once

@@ -1,4 +1,4 @@
-namespace WkApi.Data.Lti;
+namespace WkApi.Apps.LastTime.Entities;
 
 public class LtiItemEvent
 {

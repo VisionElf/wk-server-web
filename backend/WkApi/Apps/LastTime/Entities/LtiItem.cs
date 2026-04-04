@@ -1,4 +1,4 @@
-namespace WkApi.Data.Lti;
+namespace WkApi.Apps.LastTime.Entities;
 
 /// <summary>
 /// Tracked item for the Last Time I Have app (schema lti).

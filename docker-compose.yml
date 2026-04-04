@@ -16,8 +16,8 @@ services:
       ASPNETCORE_HTTP_PORTS: "8080"
       ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=wkdb;Username=wkuser;Password=wkpassword
     volumes:
-      # Persists Liquipedia JSON + cached team images across container restarts
-      - future_matches_cache:/app/Data/Cache
+      # Future Matches file cache (created on first write; not in git). Inspect: docker volume inspect … ; docker exec -it wk-api ls /app/Apps/FutureMatches/Cache
+      - future_matches_cache:/app/Apps/FutureMatches/Cache
 
   db:
     image: postgres:16

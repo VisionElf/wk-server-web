@@ -6,14 +6,14 @@ public class FutureMatchesOptions
 {
     public const string SectionName = "FutureMatches";
 
-    /// <summary>Relative to content root (e.g. Data/Cache/future-matches.json).</summary>
-    public string CacheFileRelativePath { get; set; } = "Data/Cache/future-matches.json";
+    /// <summary>Relative to content root (e.g. Apps/FutureMatches/Cache/future-matches.json).</summary>
+    public string CacheFileRelativePath { get; set; } = "Apps/FutureMatches/Cache/future-matches.json";
 
     /// <summary>User-editable games/teams (seeded from appsettings on first run).</summary>
-    public string SettingsFileRelativePath { get; set; } = "Data/Cache/future-matches-settings.json";
+    public string SettingsFileRelativePath { get; set; } = "Apps/FutureMatches/Cache/future-matches-settings.json";
 
     /// <summary>Raw HTML cache directory (per-URL files, 24h TTL by default).</summary>
-    public string HtmlPageCacheDirectoryRelativePath { get; set; } = "Data/Cache/future-matches-page-cache";
+    public string HtmlPageCacheDirectoryRelativePath { get; set; } = "Apps/FutureMatches/Cache/future-matches-page-cache";
 
     /// <summary>How long cached Liquipedia HTML is reused before refetching.</summary>
     public double HtmlPageCacheTtlHours { get; set; } = 24;

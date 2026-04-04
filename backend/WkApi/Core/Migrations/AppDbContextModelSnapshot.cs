@@ -22,7 +22,7 @@ namespace WkApi.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("WkApi.Data.Lti.LtiItem", b =>
+            modelBuilder.Entity("WkApi.Apps.LastTime.Entities.LtiItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -43,7 +43,7 @@ namespace WkApi.Data.Migrations
                     b.ToTable("tracked_items", "lti");
                 });
 
-            modelBuilder.Entity("WkApi.Data.Lti.LtiItemEvent", b =>
+            modelBuilder.Entity("WkApi.Apps.LastTime.Entities.LtiItemEvent", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -67,9 +67,9 @@ namespace WkApi.Data.Migrations
                     b.ToTable("item_events", "lti");
                 });
 
-            modelBuilder.Entity("WkApi.Data.Lti.LtiItemEvent", b =>
+            modelBuilder.Entity("WkApi.Apps.LastTime.Entities.LtiItemEvent", b =>
                 {
-                    b.HasOne("WkApi.Data.Lti.LtiItem", "Item")
+                    b.HasOne("WkApi.Apps.LastTime.Entities.LtiItem", "Item")
                         .WithMany("Events")
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -78,7 +78,7 @@ namespace WkApi.Data.Migrations
                     b.Navigation("Item");
                 });
 
-            modelBuilder.Entity("WkApi.Data.Lti.LtiItem", b =>
+            modelBuilder.Entity("WkApi.Apps.LastTime.Entities.LtiItem", b =>
                 {
                     b.Navigation("Events");
                 });
