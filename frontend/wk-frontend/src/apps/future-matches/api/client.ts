@@ -1,5 +1,15 @@
 const base = "/api/future-matches";
 
+const apiKey = import.meta.env.VITE_WK_API_KEY as string | undefined;
+
+function fmHeaders(extra?: HeadersInit): HeadersInit {
+  const h = new Headers(extra);
+  if (apiKey) {
+    h.set("X-Api-Key", apiKey);
+  }
+  return h;
+}
+
 export type FutureMatchTeam = {
   name: string;
   href?: string | null;
@@ -47,12 +57,15 @@ async function parseJson<T>(res: Response): Promise<T> {
 }
 
 export async function fetchFutureMatches(): Promise<FutureMatchesPayload> {
-  const res = await fetch(base);
+  const res = await fetch(base, { headers: fmHeaders() });
   return parseJson<FutureMatchesPayload>(res);
 }
 
 export async function refreshFutureMatches(): Promise<FutureMatchesPayload> {
-  const res = await fetch(`${base}/refresh`, { method: "POST" });
+  const res = await fetch(`${base}/refresh`, {
+    method: "POST",
+    headers: fmHeaders(),
+  });
   return parseJson<FutureMatchesPayload>(res);
 }
 
@@ -65,7 +78,7 @@ export type FutureMatchesPageCacheEntry = {
 export async function fetchFutureMatchesPageCache(): Promise<
   FutureMatchesPageCacheEntry[]
 > {
-  const res = await fetch(`${base}/page-cache`);
+  const res = await fetch(`${base}/page-cache`, { headers: fmHeaders() });
   return parseJson<FutureMatchesPageCacheEntry[]>(res);
 }
 
@@ -79,14 +92,14 @@ export type FutureMatchesImageCacheEntry = {
 export async function fetchFutureMatchesImageCache(): Promise<
   FutureMatchesImageCacheEntry[]
 > {
-  const res = await fetch(`${base}/image-cache`);
+  const res = await fetch(`${base}/image-cache`, { headers: fmHeaders() });
   return parseJson<FutureMatchesImageCacheEntry[]>(res);
 }
 
 export async function refetchFutureMatchesPageCache(url: string): Promise<void> {
   const res = await fetch(`${base}/page-cache/refetch`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: fmHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ url }),
   });
   if (!res.ok) {
@@ -100,7 +113,7 @@ export async function refetchFutureMatchesImageCache(
 ): Promise<FutureMatchesImageCacheEntry> {
   const res = await fetch(`${base}/image-cache/refetch`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: fmHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ sourceUrl }),
   });
   return parseJson<FutureMatchesImageCacheEntry>(res);
@@ -113,7 +126,7 @@ export type FutureMatchesCrawlProgress = {
 };
 
 export async function fetchFutureMatchesCrawlProgress(): Promise<FutureMatchesCrawlProgress> {
-  const res = await fetch(`${base}/crawl-progress`);
+  const res = await fetch(`${base}/crawl-progress`, { headers: fmHeaders() });
   return parseJson<FutureMatchesCrawlProgress>(res);
 }
 
@@ -134,7 +147,7 @@ export type FutureSettingsResponse = {
 };
 
 export async function fetchFutureSettings(): Promise<FutureSettingsResponse> {
-  const res = await fetch(`${base}/settings`);
+  const res = await fetch(`${base}/settings`, { headers: fmHeaders() });
   return parseJson<FutureSettingsResponse>(res);
 }
 
@@ -143,7 +156,7 @@ export async function saveFutureSettings(
 ): Promise<FutureSettingsResponse> {
   const res = await fetch(`${base}/settings`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: fmHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ games }),
   });
   if (!res.ok) {
@@ -173,7 +186,7 @@ export async function uploadFutureGameBanner(
   fd.append("file", file);
   const res = await fetch(
     `${base}/settings/games/${encodeURIComponent(gameId)}/banner`,
-    { method: "POST", body: fd },
+    { method: "POST", headers: fmHeaders(), body: fd },
   );
   if (!res.ok) {
     throw new Error(await parseSettingsError(res));
@@ -186,7 +199,7 @@ export async function deleteFutureGameBanner(
 ): Promise<FutureSettingsResponse> {
   const res = await fetch(
     `${base}/settings/games/${encodeURIComponent(gameId)}/banner`,
-    { method: "DELETE" },
+    { method: "DELETE", headers: fmHeaders() },
   );
   if (!res.ok) {
     throw new Error(await parseSettingsError(res));

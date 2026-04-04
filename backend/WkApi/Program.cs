@@ -1,9 +1,15 @@
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
+using WkApi;
 using WkApi.Data;
 using WkApi.Data.Lti;
 using WkApi.Features.FutureMatches;
 using WkApi.Infrastructure.Logging;
+using WkApi.Infrastructure.Security;
+
+// PostgreSQL: set ConnectionStrings:DefaultConnection via environment variables or
+// dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=wkdb;Username=...;Password=..."
+// (do not commit real credentials; appsettings.Development.json no longer stores them).
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +17,9 @@ builder.Services.Configure<FormOptions>(options => {
     options.MultipartBodyLengthLimit = 3_145_728;
 });
 builder.Services.AddControllers();
+builder.Services.AddOpenApi();
+
+builder.Services.Configure<WkApiOptions>(builder.Configuration.GetSection(WkApiOptions.SectionName));
 
 var serverLogBuffer = new ServerLogBuffer();
 builder.Services.AddSingleton(serverLogBuffer);
@@ -36,13 +45,21 @@ builder.Services.AddHttpClient<FutureMatchesImageCache>(client => {
 });
 builder.Services.AddScoped<FutureMatchesCoordinator>();
 
+var corsOrigins = builder.Configuration.GetSection("WkApi:CorsAllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy => policy
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader());
+    options.AddPolicy("WkCors", policy =>
+    {
+        if (corsOrigins.Length > 0) {
+            policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod();
+        }
+        else if (builder.Environment.IsDevelopment()) {
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        }
+        else {
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        }
+    });
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -50,15 +67,25 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
+if (corsOrigins.Length == 0 && !app.Environment.IsDevelopment()) {
+    app.Logger.LogWarning(
+        "WkApi:CorsAllowedOrigins is empty; CORS allows any origin. Set explicit origins for browser clients.");
+}
+
+// Production: set WkApi:RunMigrationsAtStartup to false when migrations run in CI/deploy (dotnet ef database update).
+var runMigrations = builder.Configuration.GetValue("WkApi:RunMigrationsAtStartup", true);
+using (var scope = app.Services.CreateScope()) {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    if (runMigrations) {
+        await db.Database.MigrateAsync();
+    }
+
     await LtiDbSeeder.SeedDefaultsAsync(db);
 }
 
-app.UseCors("AllowAll");
-
+app.UseCors("WkCors");
+app.UseMiddleware<ApiKeyMiddleware>();
+app.MapOpenApi();
 app.MapControllers();
 
 app.Run();

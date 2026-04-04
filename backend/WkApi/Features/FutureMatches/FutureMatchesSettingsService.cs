@@ -15,18 +15,6 @@ public class FutureMatchesSettingsService
         @"^[A-Za-z0-9_.-]{2,80}$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-    private static readonly Dictionary<string, string> KnownGameLabels = new(StringComparer.OrdinalIgnoreCase) {
-        ["counterstrike"] = "Counter-Strike",
-        ["leagueoflegends"] = "League of Legends",
-        ["valorant"] = "Valorant",
-        ["rocketleague"] = "Rocket League",
-        ["dota2"] = "Dota 2",
-        ["starcraft2"] = "StarCraft II",
-        ["overwatch"] = "Overwatch",
-        ["rainbowsix"] = "Rainbow Six",
-        ["pubgmobile"] = "PUBG Mobile",
-    };
-
     private readonly FutureMatchesSettingsStore _store;
     private readonly FutureMatchesUserBannerStore _userBanners;
     private readonly IOptions<FutureMatchesOptions> _options;
@@ -46,7 +34,7 @@ public class FutureMatchesSettingsService
     }
 
     public IReadOnlyList<FutureMatchesKnownGameDto> GetKnownGames() =>
-        KnownGameLabels
+        FutureMatchesKnownGameLabels.All
             .OrderBy(kv => kv.Value, StringComparer.OrdinalIgnoreCase)
             .Select(kv => new FutureMatchesKnownGameDto(kv.Key, kv.Value))
             .ToList();

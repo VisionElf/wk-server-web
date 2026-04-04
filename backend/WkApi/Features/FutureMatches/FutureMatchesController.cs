@@ -1,5 +1,6 @@
 using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace WkApi.Features.FutureMatches;
 
@@ -14,6 +15,7 @@ public class FutureMatchesController : ControllerBase
     private readonly FutureMatchesCrawlProgress _crawlProgress;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly FutureMatchesUserBannerStore _userBanners;
+    private readonly FutureMatchesOptions _fmOptions;
 
     public FutureMatchesController(
         FutureMatchesCoordinator coordinator,
@@ -22,7 +24,8 @@ public class FutureMatchesController : ControllerBase
         FutureMatchesPageCacheStore pageCacheStore,
         FutureMatchesCrawlProgress crawlProgress,
         IHttpClientFactory httpClientFactory,
-        FutureMatchesUserBannerStore userBanners)
+        FutureMatchesUserBannerStore userBanners,
+        IOptions<FutureMatchesOptions> fmOptions)
     {
         _coordinator = coordinator;
         _imageCache = imageCache;
@@ -31,6 +34,7 @@ public class FutureMatchesController : ControllerBase
         _crawlProgress = crawlProgress;
         _httpClientFactory = httpClientFactory;
         _userBanners = userBanners;
+        _fmOptions = fmOptions.Value;
     }
 
     [HttpGet]
@@ -85,7 +89,9 @@ public class FutureMatchesController : ControllerBase
         CancellationToken ct)
     {
         if (!IsImageRefetchSourceAllowed(body?.SourceUrl)) {
-            return BadRequest(new { message = "SourceUrl must be an absolute http(s) URL." });
+            return BadRequest(new {
+                message = "SourceUrl must be an absolute http(s) URL with a host allowed for image refetch.",
+            });
         }
 
         try {
@@ -114,7 +120,7 @@ public class FutureMatchesController : ControllerBase
             && u.Host.Equals("liquipedia.net", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool IsImageRefetchSourceAllowed(string? url)
+    private bool IsImageRefetchSourceAllowed(string? url)
     {
         if (string.IsNullOrWhiteSpace(url)) {
             return false;
@@ -124,8 +130,31 @@ public class FutureMatchesController : ControllerBase
             return false;
         }
 
-        return (u.Scheme == Uri.UriSchemeHttps || u.Scheme == Uri.UriSchemeHttp)
-            && u.Host.Length > 0;
+        if (u.Scheme != Uri.UriSchemeHttps && u.Scheme != Uri.UriSchemeHttp) {
+            return false;
+        }
+
+        var host = u.IdnHost;
+        if (string.IsNullOrEmpty(host)) {
+            return false;
+        }
+
+        foreach (var entry in _fmOptions.ImageRefetchAllowedHosts) {
+            if (string.IsNullOrWhiteSpace(entry)) {
+                continue;
+            }
+
+            var h = entry.Trim().TrimStart('.');
+            if (host.Equals(h, StringComparison.OrdinalIgnoreCase)) {
+                return true;
+            }
+
+            if (host.EndsWith("." + h, StringComparison.OrdinalIgnoreCase)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     [HttpGet("crawl-progress")]

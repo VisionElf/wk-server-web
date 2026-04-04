@@ -12,7 +12,10 @@ public class HealthController : ControllerBase
     /// Checks that the API can open a connection to PostgreSQL (database may exist empty).
     /// </summary>
     [HttpGet("db")]
-    public async Task<IActionResult> Database([FromServices] AppDbContext db, CancellationToken cancellationToken)
+    public async Task<IActionResult> Database(
+        [FromServices] AppDbContext db,
+        [FromServices] IWebHostEnvironment env,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -20,6 +23,11 @@ public class HealthController : ControllerBase
             if (!canConnect)
             {
                 return StatusCode(StatusCodes.Status503ServiceUnavailable, new { connected = false, message = "Cannot connect to the database server." });
+            }
+
+            if (!env.IsDevelopment())
+            {
+                return Ok(new { connected = true });
             }
 
             var connection = db.Database.GetDbConnection();

@@ -21,6 +21,16 @@ public class FutureMatchesOptions
     /// <summary>Delay between Liquipedia page fetches (politeness).</summary>
     public int RequestDelayMs { get; set; } = 2000;
 
+    /// <summary>
+    /// Hostnames allowed for manual image refetch (SSRF mitigation). Subdomains match (e.g. images.liquipedia.net when liquipedia.net is listed).
+    /// </summary>
+    public List<string> ImageRefetchAllowedHosts { get; set; } =
+    [
+        "liquipedia.net",
+        "static.wikia.nocookie.net",
+        "upload.wikimedia.org",
+    ];
+
     public List<FutureMatchesGameOptions> Games { get; set; } = [];
 }
 
