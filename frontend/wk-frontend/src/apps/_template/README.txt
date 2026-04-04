@@ -10,4 +10,6 @@ Steps:
    - Import your routes export in src/router.tsx and add to the shell children array.
 6. Backend (optional): add API under a dedicated PostgreSQL schema or prefixed tables, parallel to backend/WkApi/Data/Lti.
 
+Shared UI classes live in src/ui.css (imported from main.tsx). Prefer ui-page-header, ui-lead, ui-btn, ui-card, ui-field, ui-table, etc., so pages match the global design tokens in index.css.
+
 The shell shows sidebar entries from appRegistry and top tabs from the active app’s subNav, so segment strings must match route paths.

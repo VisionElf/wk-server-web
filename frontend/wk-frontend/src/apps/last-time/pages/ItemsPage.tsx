@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { addLtiEvent, fetchLtiItems, type LtiItem } from "../api/client";
 import { ItemEditorModal } from "../components/ItemEditorModal";
 import { formatDateLong, formatElapsed } from "../utils/formatElapsed";
-import "../last-time.css";
 
 export default function ItemsPage() {
   const [items, setItems] = useState<LtiItem[]>([]);
@@ -51,27 +50,27 @@ export default function ItemsPage() {
   };
 
   if (loading) {
-    return <div className="lti-loading">Loading items…</div>;
+    return <div className="ui-loading">Loading items…</div>;
   }
 
   return (
-    <div className="app-page lti-page">
-      <div className="lti-page__header">
+    <div className="app-page ui-page--constrained">
+      <div className="ui-page-header">
         <div>
           <h1>Last time I changed</h1>
-          <p className="lti-page__sub">
+          <p className="ui-lead">
             Track linens, sponges, and anything you replace on a schedule.
           </p>
         </div>
       </div>
 
-      {loadError != null && <p className="lti-error">{loadError}</p>}
+      {loadError != null && <p className="ui-error">{loadError}</p>}
 
-      <div className="lti-grid">
+      <div className="ui-grid-cards">
         {items.map((item) => (
           <article
             key={item.id}
-            className="lti-card"
+            className="ui-card ui-card--interactive"
             role="button"
             tabIndex={0}
             onClick={() => openEdit(item)}
@@ -82,37 +81,39 @@ export default function ItemsPage() {
               }
             }}
           >
-            <h2 className="lti-card__title">{item.name}</h2>
-            <p className="lti-card__elapsed">
+            <h2 className="ui-card__title">{item.name}</h2>
+            <p className="ui-card__line">
               {formatElapsed(item.lastChangedAtUtc)}
             </p>
             {item.lastChangedAtUtc != null && (
               <>
-                <p className="lti-card__date">
+                <p className="ui-card__detail">
                   {formatDateLong(item.lastChangedAtUtc)}
                 </p>
                 {item.historyCount > 0 && (
-                  <p className="lti-card__meta">
+                  <p className="ui-card__meta">
                     {item.historyCount}{" "}
                     {item.historyCount === 1 ? "entry" : "entries"} in history
                   </p>
                 )}
               </>
             )}
-            <button
-              type="button"
-              className="lti-btn lti-btn--primary"
-              onClick={(e) => void markNow(e, item)}
-            >
-              Mark now
-            </button>
+            <div className="ui-card__footer">
+              <button
+                type="button"
+                className="ui-btn ui-btn--primary"
+                onClick={(e) => void markNow(e, item)}
+              >
+                Mark now
+              </button>
+            </div>
           </article>
         ))}
       </div>
 
       <button
         type="button"
-        className="lti-fab"
+        className="ui-fab"
         aria-label="Add item"
         onClick={openAdd}
       >

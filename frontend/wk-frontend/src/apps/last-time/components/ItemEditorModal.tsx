@@ -6,7 +6,6 @@ import {
   deleteLtiItem,
   type LtiItem,
 } from "../api/client";
-import "../last-time.css";
 
 type Mode = "add" | "edit";
 
@@ -127,12 +126,12 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
 
   return (
     <div
-      className="lti-modal-backdrop"
+      className="ui-modal-backdrop"
       role="presentation"
       onMouseDown={handleBackdrop}
     >
       <div
-        className="lti-modal"
+        className="ui-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="lti-modal-title"
@@ -143,7 +142,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
         </h2>
 
         {mode === "edit" && item?.lastChangedAtUtc != null && (
-          <p className="lti-page__sub" style={{ marginBottom: "1rem" }}>
+          <p className="ui-lead">
             Last changed:{" "}
             {new Date(item.lastChangedAtUtc).toLocaleString(undefined, {
               dateStyle: "medium",
@@ -152,10 +151,10 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
           </p>
         )}
 
-        {error != null && <p className="lti-error">{error}</p>}
+        {error != null && <p className="ui-error">{error}</p>}
 
         {showCustom ? (
-          <div className="lti-field">
+          <div className="ui-field">
             <label htmlFor="lti-custom-date">Date</label>
             <input
               id="lti-custom-date"
@@ -163,10 +162,10 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
               value={customDate}
               onChange={(e) => setCustomDate(e.target.value)}
             />
-            <div className="lti-modal__row">
+            <div className="ui-modal__row">
               <button
                 type="button"
-                className="lti-btn"
+                className="ui-btn"
                 onClick={() => setShowCustom(false)}
                 disabled={busy}
               >
@@ -174,7 +173,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
               </button>
               <button
                 type="button"
-                className="lti-btn lti-btn--primary"
+                className="ui-btn ui-btn--primary"
                 onClick={() => void onSaveCustom()}
                 disabled={busy}
               >
@@ -185,7 +184,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
         ) : (
           <>
             {showNameField && (
-              <div className="lti-field">
+              <div className="ui-field">
                 <label htmlFor="lti-name">Name</label>
                 <input
                   id="lti-name"
@@ -199,10 +198,10 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
               </div>
             )}
 
-            <div className="lti-modal__actions">
+            <div className="ui-modal__actions">
               <button
                 type="button"
-                className="lti-btn lti-btn--primary"
+                className="ui-btn ui-btn--primary"
                 onClick={() => void onMarkNow()}
                 disabled={busy}
               >
@@ -210,7 +209,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
               </button>
               <button
                 type="button"
-                className="lti-btn"
+                className="ui-btn"
                 onClick={() => setShowCustom(true)}
                 disabled={busy}
               >
@@ -219,7 +218,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
               {mode === "edit" && hasHistory && (
                 <button
                   type="button"
-                  className="lti-btn lti-btn--danger"
+                  className="ui-btn ui-btn--danger"
                   onClick={() => void onClearHistory()}
                   disabled={busy}
                 >
@@ -229,7 +228,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
               {mode === "edit" && item?.lastChangedAtUtc != null && (
                 <button
                   type="button"
-                  className="lti-btn lti-btn--danger"
+                  className="ui-btn ui-btn--danger"
                   onClick={() => void onDelete()}
                   disabled={busy}
                 >
@@ -237,10 +236,10 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
                 </button>
               )}
             </div>
-            <div className="lti-modal__row">
+            <div className="ui-modal__row">
               <button
                 type="button"
-                className="lti-btn"
+                className="ui-btn"
                 onClick={onClose}
                 disabled={busy}
               >

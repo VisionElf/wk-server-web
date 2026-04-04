@@ -11,6 +11,12 @@
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
+  /* Shared layout primitives (buttons, cards, forms across apps) */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --danger-fg: #b91c1c;
+  --danger-bg-hover: rgba(185, 28, 28, 0.12);
+
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
@@ -43,6 +49,8 @@
     --social-bg: rgba(58, 47, 47, 0.5);
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --danger-fg: #fca5a5;
+    --danger-bg-hover: rgba(252, 165, 165, 0.14);
   }
 
   #social .button-icon {

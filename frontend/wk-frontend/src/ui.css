@@ -1,0 +1,309 @@
+/**
+ * Shared UI for sub-apps: same tokens as index.css (:root), same scale as shell (rem, 6px radii).
+ * Use these class names from any app page inside .app-page.
+ */
+
+/* —— Page blocks —— */
+.ui-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.ui-page-header h1 {
+  margin: 0;
+}
+
+.ui-lead {
+  margin: 0.35rem 0 0;
+  font-size: 0.92rem;
+  line-height: 145%;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  max-width: 52ch;
+}
+
+.ui-page--constrained {
+  max-width: 1200px;
+}
+
+/* —— Grid of cards —— */
+.ui-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+/* —— Card surface (aligned with sidebar link radius + code-bg like shell) —— */
+.ui-card {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.1rem;
+  background: var(--code-bg);
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s ease, background 0.15s ease;
+  border-bottom-width: 3px;
+  border-bottom-color: var(--accent-border);
+}
+
+@media (prefers-color-scheme: dark) {
+  .ui-card {
+    background: var(--social-bg);
+  }
+}
+
+.ui-card--interactive {
+  cursor: pointer;
+}
+
+.ui-card--interactive:hover {
+  border-color: var(--accent-border);
+}
+
+.ui-card__title {
+  margin: 0 0 0.5rem;
+  font-family: var(--heading);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--text-h);
+}
+
+.ui-card__line {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  line-height: 145%;
+  color: var(--text);
+}
+
+.ui-card__detail {
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+  line-height: 140%;
+  color: var(--text);
+  opacity: 0.9;
+}
+
+.ui-card__meta {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  line-height: 140%;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.ui-card__footer {
+  margin-top: 0.25rem;
+}
+
+/* —— Buttons (match subnav / sidebar interaction feel) —— */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  line-height: 1.2;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.ui-btn:hover:not(:disabled) {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+}
+
+.ui-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ui-btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.ui-btn--primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.ui-btn--danger {
+  border-color: var(--danger-fg);
+  color: var(--danger-fg);
+  background: transparent;
+}
+
+.ui-btn--danger:hover:not(:disabled) {
+  background: var(--danger-bg-hover);
+  border-color: var(--danger-fg);
+}
+
+/* —— FAB —— */
+.ui-fab {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.75rem;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.12s ease, filter 0.12s ease;
+  z-index: 2;
+}
+
+.ui-fab:hover:not(:disabled) {
+  transform: scale(1.05);
+  filter: brightness(1.08);
+}
+
+/* —— Modal —— */
+.ui-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 1rem;
+}
+
+.ui-modal {
+  width: min(100%, 420px);
+  max-height: min(90vh, 560px);
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.35rem;
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.ui-modal h2 {
+  margin: 0 0 0.75rem;
+  font-family: var(--heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--text-h);
+}
+
+.ui-modal .ui-lead {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.ui-modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.ui-modal__row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
+/* —— Form fields —— */
+.ui-field {
+  margin-bottom: 1rem;
+}
+
+.ui-field > label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-h);
+  margin-bottom: 0.35rem;
+  font-family: var(--heading);
+}
+
+.ui-input,
+.ui-field input[type="text"],
+.ui-field input[type="date"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text-h);
+  font-size: 1rem;
+  line-height: 145%;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
+.ui-input:focus,
+.ui-field input:focus {
+  outline: 2px solid var(--accent-border);
+  outline-offset: 1px;
+}
+
+/* —— Feedback —— */
+.ui-error {
+  color: var(--danger-fg);
+  font-size: 0.88rem;
+  line-height: 145%;
+  margin: 0 0 0.75rem;
+}
+
+.ui-loading {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 145%;
+}
+
+/* —— Data table —— */
+.ui-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  line-height: 145%;
+}
+
+.ui-table th,
+.ui-table td {
+  text-align: left;
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.ui-table th {
+  color: var(--text-h);
+  font-weight: 600;
+  font-family: var(--heading);
+}
+
+.ui-table tbody tr:hover {
+  background: var(--accent-bg);
+}
