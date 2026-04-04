@@ -127,6 +127,11 @@
   cursor: not-allowed;
 }
 
+.ui-btn--small {
+  padding: 0.28rem 0.55rem;
+  font-size: 0.82rem;
+}
+
 .ui-btn--primary {
   background: var(--accent);
   border-color: var(--accent);

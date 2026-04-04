@@ -37,7 +37,8 @@ public class FutureMatchesPageCacheStore
     public async Task<(string Html, bool FetchedFromNetwork)> GetOrDownloadAsync(
         string url,
         HttpClient http,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        bool forceRefresh = false)
     {
         var normalized = NormalizeUrlForCacheKey(url);
         var key = HashUrl(normalized);
@@ -47,7 +48,9 @@ public class FutureMatchesPageCacheStore
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try {
-            if (File.Exists(htmlPath) && File.Exists(metaPath)) {
+            if (!forceRefresh
+                && File.Exists(htmlPath)
+                && File.Exists(metaPath)) {
                 try {
                     await using var metaStream = File.OpenRead(metaPath);
                     var meta = await JsonSerializer.DeserializeAsync<PageCacheMeta>(metaStream, JsonOptions, ct)
@@ -71,8 +74,11 @@ public class FutureMatchesPageCacheStore
                     _logger.LogWarning(ex, "Invalid page cache meta, refetching: {Url}", normalized);
                 }
             }
-
-            _logger.LogInformation("Fetching Liquipedia page (cache miss): {Url}", normalized);
+            _logger.LogInformation(
+                forceRefresh
+                    ? "Fetching Liquipedia page (manual refetch): {Url}"
+                    : "Fetching Liquipedia page (cache miss): {Url}",
+                normalized);
             using var response = await http.GetAsync(normalized, HttpCompletionOption.ResponseHeadersRead, ct)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();

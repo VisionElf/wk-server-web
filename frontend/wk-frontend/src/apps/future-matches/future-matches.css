@@ -1,4 +1,48 @@
 /* Future-matches–specific layout; tokens from index.css / ui.css */
+
+.fm-cache-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 1rem;
+}
+
+.fm-cache-tabs__btn {
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.fm-cache-tabs__btn:hover {
+  background: var(--social-bg);
+  color: var(--text-h);
+}
+
+.fm-cache-tabs__btn[aria-selected="true"] {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--text-h);
+  font-weight: 500;
+}
+
+.fm-cache-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  vertical-align: middle;
+  border-radius: 6px;
+  background: var(--social-bg);
+  border: 1px solid var(--border);
+}
+
 .fm-page .fm-last-up {
   margin-top: 0.25rem;
   font-size: 0.85rem;

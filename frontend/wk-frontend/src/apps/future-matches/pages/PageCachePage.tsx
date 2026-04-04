@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchFutureMatchesPageCache } from "../api/client";
+import {
+  fetchFutureMatchesImageCache,
+  fetchFutureMatchesPageCache,
+  refetchFutureMatchesImageCache,
+  refetchFutureMatchesPageCache,
+  type FutureMatchesImageCacheEntry,
+  type FutureMatchesPageCacheEntry,
+} from "../api/client";
 import "../future-matches.css";
+
+type CacheTab = "html" | "img";
 
 function formatUtc(iso: string): string {
   const d = new Date(iso);
@@ -14,17 +23,26 @@ function formatUtc(iso: string): string {
 }
 
 export default function PageCachePage() {
-  const [rows, setRows] = useState<Awaited<
-    ReturnType<typeof fetchFutureMatchesPageCache>
-  > | null>(null);
+  const [tab, setTab] = useState<CacheTab>("html");
+  const [htmlRows, setHtmlRows] = useState<FutureMatchesPageCacheEntry[] | null>(
+    null,
+  );
+  const [imgRows, setImgRows] = useState<FutureMatchesImageCacheEntry[] | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refetchingKey, setRefetchingKey] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const data = await fetchFutureMatchesPageCache();
-      setRows(data);
+      const [html, img] = await Promise.all([
+        fetchFutureMatchesPageCache(),
+        fetchFutureMatchesImageCache(),
+      ]);
+      setHtmlRows(html);
+      setImgRows(img);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
@@ -36,52 +54,207 @@ export default function PageCachePage() {
     void load();
   }, [load]);
 
+  const onRefetchHtml = async (url: string) => {
+    setRefetchingKey(`h:${url}`);
+    setError(null);
+    try {
+      await refetchFutureMatchesPageCache(url);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Refetch failed");
+    } finally {
+      setRefetchingKey(null);
+    }
+  };
+
+  const onRefetchImg = async (sourceUrl: string) => {
+    setRefetchingKey(`i:${sourceUrl}`);
+    setError(null);
+    try {
+      await refetchFutureMatchesImageCache(sourceUrl);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Refetch failed");
+    } finally {
+      setRefetchingKey(null);
+    }
+  };
+
   if (loading) {
-    return <div className="ui-loading">Loading page cache…</div>;
+    return <div className="ui-loading">Loading cache…</div>;
   }
 
   return (
     <div className="app-page ui-page--constrained fm-page">
       <div className="ui-page-header">
         <div>
-          <h1>Liquipedia HTML cache</h1>
+          <h1>Page cache</h1>
           <p className="ui-lead">
-            Raw pages stored on the API server (24h TTL by default). Expiry uses
-            the current <code>HtmlPageCacheTtlHours</code> setting.
+            Liquipedia HTML pages (TTL from settings) and cached images served
+            under <code>/api/future-matches/media/…</code>. Use Refetch to pull a
+            fresh copy immediately.
           </p>
         </div>
         <button type="button" className="ui-btn" onClick={() => void load()}>
           Reload
         </button>
       </div>
+
+      <div className="fm-cache-tabs" role="tablist" aria-label="Cache type">
+        <button
+          type="button"
+          role="tab"
+          className="fm-cache-tabs__btn"
+          aria-selected={tab === "html"}
+          onClick={() => setTab("html")}
+        >
+          HTML
+        </button>
+        <button
+          type="button"
+          role="tab"
+          className="fm-cache-tabs__btn"
+          aria-selected={tab === "img"}
+          onClick={() => setTab("img")}
+        >
+          Images
+        </button>
+      </div>
+
       {error != null && <p className="ui-error">{error}</p>}
-      {rows != null && rows.length === 0 ? (
-        <p className="ui-lead">No cached pages yet. Run Upcoming → Refresh.</p>
-      ) : (
-        <div className="fm-table-wrap">
-          <table className="ui-table fm-table">
-            <thead>
-              <tr>
-                <th>URL</th>
-                <th>Fetched (UTC stored)</th>
-                <th>Expires after</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows?.map((r) => (
-                <tr key={r.url}>
-                  <td>
-                    <a href={r.url} target="_blank" rel="noreferrer">
-                      {r.url}
-                    </a>
-                  </td>
-                  <td>{formatUtc(r.fetchedAtUtc)}</td>
-                  <td>{formatUtc(r.expiresAtUtc)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
+      {tab === "html" && (
+        <>
+          {htmlRows != null && htmlRows.length === 0 ? (
+            <p className="ui-lead">
+              No cached HTML yet. Run Upcoming → Refresh.
+            </p>
+          ) : (
+            <div className="fm-table-wrap">
+              <table className="ui-table">
+                <thead>
+                  <tr>
+                    <th>URL</th>
+                    <th>Fetched (UTC)</th>
+                    <th>Expires after</th>
+                    <th style={{ width: "7rem" }}> </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {htmlRows?.map((r) => (
+                    <tr key={r.url}>
+                      <td>
+                        <a href={r.url} target="_blank" rel="noreferrer">
+                          {r.url}
+                        </a>
+                      </td>
+                      <td>{formatUtc(r.fetchedAtUtc)}</td>
+                      <td>{formatUtc(r.expiresAtUtc)}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="ui-btn ui-btn--small"
+                          disabled={refetchingKey === `h:${r.url}`}
+                          onClick={() => void onRefetchHtml(r.url)}
+                        >
+                          {refetchingKey === `h:${r.url}`
+                            ? "…"
+                            : "Refetch"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+
+      {tab === "img" && (
+        <>
+          {imgRows != null && imgRows.length === 0 ? (
+            <p className="ui-lead">
+              No cached images yet. Run Upcoming → Refresh.
+            </p>
+          ) : (
+            <div className="fm-table-wrap">
+              <table className="ui-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: "3.5rem" }}> </th>
+                    <th>Source URL</th>
+                    <th>File</th>
+                    <th>Fetched (UTC)</th>
+                    <th style={{ width: "7rem" }}> </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {imgRows?.map((r) => {
+                    const canRefetch =
+                      r.sourceUrl != null && r.sourceUrl.length > 0;
+                    return (
+                      <tr key={r.fileName}>
+                        <td>
+                          <img
+                            className="fm-cache-thumb"
+                            src={r.mediaPath}
+                            alt=""
+                            loading="lazy"
+                          />
+                        </td>
+                        <td>
+                          {canRefetch ? (
+                            <a
+                              href={r.sourceUrl!}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {r.sourceUrl}
+                            </a>
+                          ) : (
+                            <span className="ui-lead" style={{ margin: 0 }}>
+                              —
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <code>{r.fileName}</code>
+                        </td>
+                        <td>{formatUtc(r.fetchedAtUtc)}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className="ui-btn ui-btn--small"
+                            disabled={
+                              !canRefetch ||
+                              refetchingKey === `i:${r.sourceUrl ?? ""}`
+                            }
+                            title={
+                              canRefetch
+                                ? undefined
+                                : "Source URL unknown for this file; run a full refresh to store metadata."
+                            }
+                            onClick={() => {
+                              if (r.sourceUrl != null) {
+                                void onRefetchImg(r.sourceUrl);
+                              }
+                            }}
+                          >
+                            {canRefetch &&
+                            refetchingKey === `i:${r.sourceUrl}`
+                              ? "…"
+                              : "Refetch"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

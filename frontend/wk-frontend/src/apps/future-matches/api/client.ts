@@ -69,6 +69,43 @@ export async function fetchFutureMatchesPageCache(): Promise<
   return parseJson<FutureMatchesPageCacheEntry[]>(res);
 }
 
+export type FutureMatchesImageCacheEntry = {
+  fileName: string;
+  sourceUrl: string | null;
+  fetchedAtUtc: string;
+  mediaPath: string;
+};
+
+export async function fetchFutureMatchesImageCache(): Promise<
+  FutureMatchesImageCacheEntry[]
+> {
+  const res = await fetch(`${base}/image-cache`);
+  return parseJson<FutureMatchesImageCacheEntry[]>(res);
+}
+
+export async function refetchFutureMatchesPageCache(url: string): Promise<void> {
+  const res = await fetch(`${base}/page-cache/refetch`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || res.statusText);
+  }
+}
+
+export async function refetchFutureMatchesImageCache(
+  sourceUrl: string,
+): Promise<FutureMatchesImageCacheEntry> {
+  const res = await fetch(`${base}/image-cache/refetch`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sourceUrl }),
+  });
+  return parseJson<FutureMatchesImageCacheEntry>(res);
+}
+
 export type FutureMatchesCrawlProgress = {
   running: boolean;
   currentUrl: string | null;

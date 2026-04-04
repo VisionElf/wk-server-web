@@ -46,4 +46,15 @@ public class FutureMatchTournamentDto
 
 public record FutureMatchesPageCacheEntryDto(string Url, DateTime FetchedAtUtc, DateTime ExpiresAtUtc);
 
+/// <summary>On-disk image cache row; SourceUrl is null for files cached before metadata was added.</summary>
+public record FutureMatchesImageCacheEntryDto(
+    string FileName,
+    string? SourceUrl,
+    DateTime FetchedAtUtc,
+    string MediaPath);
+
+public record FutureMatchesRefetchPageBody(string Url);
+
+public record FutureMatchesRefetchImageBody(string SourceUrl);
+
 public record FutureMatchesCrawlProgressApiDto(bool Running, string? CurrentUrl, string? Detail);
