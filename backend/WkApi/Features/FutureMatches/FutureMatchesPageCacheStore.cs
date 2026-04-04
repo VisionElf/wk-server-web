@@ -111,5 +111,35 @@ public class FutureMatchesPageCacheStore
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
+    /// <summary>Lists on-disk HTML cache entries (URL + fetch time + expiry from current TTL).</summary>
+    public IReadOnlyList<FutureMatchesPageCacheEntryDto> ListCachedEntries()
+    {
+        var ttl = TimeSpan.FromHours(Math.Max(0.25, _options.Value.HtmlPageCacheTtlHours));
+        var list = new List<FutureMatchesPageCacheEntryDto>();
+        if (!Directory.Exists(CacheDirectory)) {
+            return list;
+        }
+
+        foreach (var metaPath in Directory.EnumerateFiles(CacheDirectory, "*.meta.json")) {
+            try {
+                var json = File.ReadAllText(metaPath);
+                var meta = JsonSerializer.Deserialize<PageCacheMeta>(json, JsonOptions);
+                if (meta == null || string.IsNullOrWhiteSpace(meta.Url)) {
+                    continue;
+                }
+
+                var fetched = meta.FetchedAtUtc.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(meta.FetchedAtUtc, DateTimeKind.Utc)
+                    : meta.FetchedAtUtc.ToUniversalTime();
+                list.Add(new FutureMatchesPageCacheEntryDto(meta.Url, fetched, fetched + ttl));
+            }
+            catch (Exception ex) {
+                _logger.LogDebug(ex, "Skip unreadable page cache meta: {Path}", metaPath);
+            }
+        }
+
+        return list.OrderBy(x => x.Url, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
     private sealed record PageCacheMeta(string Url, DateTime FetchedAtUtc);
 }

@@ -17,6 +17,15 @@ export function Sidebar() {
             {app.title}
           </NavLink>
         ))}
+        <NavLink
+          to="/console"
+          end
+          className={({ isActive }) =>
+            `app-sidebar__link${isActive ? " app-sidebar__link--active" : ""}`
+          }
+        >
+          Console
+        </NavLink>
       </nav>
     </aside>
   );

@@ -36,6 +36,32 @@ public class FutureMatchesImageCache
     /// <summary>
     /// Returns true if any icon URL was updated (caller may persist JSON).
     /// </summary>
+    public async Task<bool> MaterializeGameVisualsAsync(
+        FutureMatchesPayloadDto payload,
+        CancellationToken ct = default)
+    {
+        if (payload.GameVisuals == null || payload.GameVisuals.Count == 0) {
+            return false;
+        }
+
+        var changed = false;
+        foreach (var g in payload.GameVisuals) {
+            var nextLogo = await ResolveAsync(g.Logo, ct).ConfigureAwait(false);
+            if (nextLogo != g.Logo) {
+                g.Logo = nextLogo;
+                changed = true;
+            }
+
+            var nextBanner = await ResolveAsync(g.Banner, ct).ConfigureAwait(false);
+            if (nextBanner != g.Banner) {
+                g.Banner = nextBanner;
+                changed = true;
+            }
+        }
+
+        return changed;
+    }
+
     public async Task<bool> MaterializeMatchIconsAsync(
         FutureMatchesPayloadDto payload,
         CancellationToken ct = default)
@@ -95,7 +121,7 @@ public class FutureMatchesImageCache
                     return MediaPathPrefix + existing;
                 }
 
-                _logger.LogInformation("Caching team icon: {Url}", icon);
+                _logger.LogInformation("Caching remote image: {Url}", icon);
                 using var response = await _http.GetAsync(icon, HttpCompletionOption.ResponseHeadersRead, ct)
                     .ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
@@ -154,7 +180,7 @@ public class FutureMatchesImageCache
     private static string PickExtension(string url, string? mediaType)
     {
         var fromUrl = PickExtensionFromUrl(url);
-        if (fromUrl is ".jpg" or ".jpeg" or ".webp" or ".gif") {
+        if (fromUrl is ".jpg" or ".jpeg" or ".webp" or ".gif" or ".svg") {
             return fromUrl;
         }
 
@@ -163,6 +189,7 @@ public class FutureMatchesImageCache
             "image/jpeg" or "image/jpg" => ".jpg",
             "image/webp" => ".webp",
             "image/gif" => ".gif",
+            "image/svg+xml" => ".svg",
             _ => fromUrl,
         };
     }
@@ -185,7 +212,7 @@ public class FutureMatchesImageCache
         }
 
         var ext = fileName[dot..].ToLowerInvariant();
-        return ext is ".png" or ".jpg" or ".jpeg" or ".webp" or ".gif";
+        return ext is ".png" or ".jpg" or ".jpeg" or ".webp" or ".gif" or ".svg";
     }
 
     private static bool IsLowerHex(char c) => c is (>= '0' and <= '9') or (>= 'a' and <= 'f');
@@ -212,6 +239,10 @@ public class FutureMatchesImageCache
 
     public static string GetContentType(string fileName)
     {
+        if (fileName.EndsWith(".svg", StringComparison.OrdinalIgnoreCase)) {
+            return "image/svg+xml";
+        }
+
         return ContentTypes.TryGetContentType(fileName, out var ct)
             ? ct
             : "application/octet-stream";

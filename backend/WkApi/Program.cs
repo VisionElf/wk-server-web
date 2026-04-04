@@ -2,15 +2,21 @@ using Microsoft.EntityFrameworkCore;
 using WkApi.Data;
 using WkApi.Data.Lti;
 using WkApi.Features.FutureMatches;
+using WkApi.Infrastructure.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+var serverLogBuffer = new ServerLogBuffer();
+builder.Services.AddSingleton(serverLogBuffer);
+builder.Logging.AddProvider(new ServerLogBufferLoggerProvider(serverLogBuffer));
+
 builder.Services.Configure<FutureMatchesOptions>(
     builder.Configuration.GetSection(FutureMatchesOptions.SectionName));
 builder.Services.AddSingleton<FutureMatchesCacheStore>();
 builder.Services.AddSingleton<FutureMatchesPageCacheStore>();
+builder.Services.AddSingleton<FutureMatchesCrawlProgress>();
 builder.Services.AddSingleton<FutureMatchesSettingsStore>();
 builder.Services.AddSingleton<FutureMatchesSettingsService>();
 builder.Services.AddHttpClient<FutureMatchesCrawlService>(client => {

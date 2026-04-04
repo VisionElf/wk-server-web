@@ -24,9 +24,17 @@ export type FutureMatchItem = {
   tournament?: FutureMatchTournament | null;
 };
 
+export type FutureMatchGameVisual = {
+  game: string;
+  gameLabel: string;
+  logo?: string | null;
+  banner?: string | null;
+};
+
 export type FutureMatchesPayload = {
   lastUpdatedUtc?: string | null;
   matches: FutureMatchItem[];
+  gameVisuals?: FutureMatchGameVisual[] | null;
   refreshErrors?: string[] | null;
 };
 
@@ -46,6 +54,30 @@ export async function fetchFutureMatches(): Promise<FutureMatchesPayload> {
 export async function refreshFutureMatches(): Promise<FutureMatchesPayload> {
   const res = await fetch(`${base}/refresh`, { method: "POST" });
   return parseJson<FutureMatchesPayload>(res);
+}
+
+export type FutureMatchesPageCacheEntry = {
+  url: string;
+  fetchedAtUtc: string;
+  expiresAtUtc: string;
+};
+
+export async function fetchFutureMatchesPageCache(): Promise<
+  FutureMatchesPageCacheEntry[]
+> {
+  const res = await fetch(`${base}/page-cache`);
+  return parseJson<FutureMatchesPageCacheEntry[]>(res);
+}
+
+export type FutureMatchesCrawlProgress = {
+  running: boolean;
+  currentUrl: string | null;
+  detail: string | null;
+};
+
+export async function fetchFutureMatchesCrawlProgress(): Promise<FutureMatchesCrawlProgress> {
+  const res = await fetch(`${base}/crawl-progress`);
+  return parseJson<FutureMatchesCrawlProgress>(res);
 }
 
 export type FutureGameSettings = {

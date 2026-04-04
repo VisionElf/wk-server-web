@@ -9,15 +9,21 @@ public class FutureMatchesController : ControllerBase
     private readonly FutureMatchesCoordinator _coordinator;
     private readonly FutureMatchesImageCache _imageCache;
     private readonly FutureMatchesSettingsService _settings;
+    private readonly FutureMatchesPageCacheStore _pageCacheStore;
+    private readonly FutureMatchesCrawlProgress _crawlProgress;
 
     public FutureMatchesController(
         FutureMatchesCoordinator coordinator,
         FutureMatchesImageCache imageCache,
-        FutureMatchesSettingsService settings)
+        FutureMatchesSettingsService settings,
+        FutureMatchesPageCacheStore pageCacheStore,
+        FutureMatchesCrawlProgress crawlProgress)
     {
         _coordinator = coordinator;
         _imageCache = imageCache;
         _settings = settings;
+        _pageCacheStore = pageCacheStore;
+        _crawlProgress = crawlProgress;
     }
 
     [HttpGet]
@@ -32,6 +38,19 @@ public class FutureMatchesController : ControllerBase
     {
         var data = await _coordinator.RefreshAsync(ct).ConfigureAwait(false);
         return Ok(data);
+    }
+
+    [HttpGet("page-cache")]
+    public ActionResult<IReadOnlyList<FutureMatchesPageCacheEntryDto>> GetPageCache()
+    {
+        return Ok(_pageCacheStore.ListCachedEntries());
+    }
+
+    [HttpGet("crawl-progress")]
+    public ActionResult<FutureMatchesCrawlProgressApiDto> GetCrawlProgress()
+    {
+        var s = _crawlProgress.GetSnapshot();
+        return Ok(new FutureMatchesCrawlProgressApiDto(s.Running, s.CurrentUrl, s.Detail));
     }
 
     [HttpGet("settings")]

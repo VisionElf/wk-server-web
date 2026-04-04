@@ -1,3 +1,4 @@
+import { lazy } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { dashboardRoutes } from "./apps/dashboard/routes";
 import { operationsRoutes } from "./apps/operations/routes";
@@ -6,6 +7,8 @@ import { lastTimeRoutes } from "./apps/last-time/routes";
 import { defaultLandingPath } from "./core/appRegistry";
 import NotFoundPage from "./shell/NotFoundPage";
 import { AppShell } from "./shell/AppShell";
+
+const ConsolePage = lazy(() => import("./shell/pages/ConsolePage"));
 
 export const router = createBrowserRouter([
   {
@@ -17,6 +20,7 @@ export const router = createBrowserRouter([
       operationsRoutes,
       lastTimeRoutes,
       futureMatchesRoutes,
+      { path: "console", element: <ConsolePage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },

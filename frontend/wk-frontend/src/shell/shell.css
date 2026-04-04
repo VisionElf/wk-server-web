@@ -56,6 +56,33 @@
   color: var(--text-h);
 }
 
+/* Global Console */
+.console-page__out {
+  width: 100%;
+  min-height: min(70vh, 640px);
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-h);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.console-page__pause {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+}
+
 .app-sidebar__link--active {
   background: var(--accent-bg);
   color: var(--text-h);

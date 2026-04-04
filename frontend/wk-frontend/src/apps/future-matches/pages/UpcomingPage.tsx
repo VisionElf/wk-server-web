@@ -1,8 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import "../future-matches.css";
 import {
   fetchFutureMatches,
+  fetchFutureMatchesCrawlProgress,
   refreshFutureMatches,
+  type FutureMatchGameVisual,
   type FutureMatchItem,
   type FutureMatchesPayload,
 } from "../api/client";
@@ -157,6 +166,30 @@ function TournamentCell({ m }: { m: FutureMatchItem }) {
   return "—";
 }
 
+function GameCell({
+  m,
+  visual,
+}: {
+  m: FutureMatchItem;
+  visual?: FutureMatchGameVisual | undefined;
+}) {
+  return (
+    <span className="fm-game-cell">
+      {visual?.logo != null && visual.logo !== "" ? (
+        <img
+          src={visual.logo}
+          alt=""
+          width={32}
+          height={32}
+          className="fm-game-cell__icon"
+          loading="lazy"
+        />
+      ) : null}
+      <span className="fm-game-cell__name">{m.gameLabel}</span>
+    </span>
+  );
+}
+
 function WhenCell({
   m,
   showLiveCountdown,
@@ -183,10 +216,12 @@ function MatchTableSection({
   title,
   rows,
   showLiveCountdown,
+  visualByGame,
 }: {
   title: string;
   rows: FutureMatchItem[];
   showLiveCountdown: boolean;
+  visualByGame: Map<string, FutureMatchGameVisual>;
 }) {
   return (
     <section className="fm-match-section" aria-labelledby={`fm-section-${title.replace(/\s/g, "-")}`}>
@@ -208,13 +243,26 @@ function MatchTableSection({
               </tr>
             </thead>
             <tbody>
-              {rows.map((m, i) => (
+              {rows.map((m, i) => {
+                const visual = visualByGame.get(m.game.toLowerCase());
+                const hasBanner =
+                  visual?.banner != null && visual.banner !== "";
+                return (
                 <tr
-                  className="fm-row"
+                  className={`fm-row${hasBanner ? " fm-row--game-art" : ""}`}
                   data-fm-game={m.game}
+                  style={
+                    hasBanner
+                      ? ({
+                          ["--fm-row-bg-image" as string]: `url(${JSON.stringify(visual!.banner)})`,
+                        } as CSSProperties)
+                      : undefined
+                  }
                   key={`${itemKind(m)}-${m.game}-${m.dateUnix ?? "x"}-${m.tournament?.href ?? ""}-${m.team1?.name ?? ""}-${i}`}
                 >
-                  <td>{m.gameLabel}</td>
+                  <td>
+                    <GameCell m={m} visual={visual} />
+                  </td>
                   <td>
                     <TeamCell team={m.team1} />
                   </td>
@@ -226,7 +274,8 @@ function MatchTableSection({
                     <TournamentCell m={m} />
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>
@@ -240,7 +289,19 @@ export default function UpcomingPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [crawlModalOpen, setCrawlModalOpen] = useState(false);
+  const [crawlStatusLine, setCrawlStatusLine] = useState("");
+  const crawlPollRef = useRef<number | null>(null);
   const bucketTick = useIntervalTick(60_000);
+
+  const stopCrawlPoll = useCallback(() => {
+    if (crawlPollRef.current != null) {
+      window.clearInterval(crawlPollRef.current);
+      crawlPollRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => stopCrawlPoll(), [stopCrawlPoll]);
 
   const load = useCallback(async () => {
     setError(null);
@@ -263,15 +324,51 @@ export default function UpcomingPage() {
     return splitMatchesByBucket(data?.matches ?? []);
   }, [data?.matches, bucketTick]);
 
+  const visualByGame = useMemo(() => {
+    const m = new Map<string, FutureMatchGameVisual>();
+    for (const v of data?.gameVisuals ?? []) {
+      m.set(v.game.toLowerCase(), v);
+    }
+    return m;
+  }, [data?.gameVisuals]);
+
+  const closeCrawlModal = () => {
+    stopCrawlPoll();
+    setCrawlModalOpen(false);
+  };
+
   const onRefresh = async () => {
     setError(null);
+    setCrawlModalOpen(true);
+    setCrawlStatusLine("Starting…");
+    stopCrawlPoll();
+    crawlPollRef.current = window.setInterval(() => {
+      void (async () => {
+        try {
+          const p = await fetchFutureMatchesCrawlProgress();
+          const line =
+            p.detail ??
+            p.currentUrl ??
+            (p.running ? "Working…" : "");
+          if (line !== "") {
+            setCrawlStatusLine(line);
+          }
+        } catch {
+          /* ignore */
+        }
+      })();
+    }, 400);
+
     setRefreshing(true);
     try {
       const payload = await refreshFutureMatches();
       setData(payload);
+      setCrawlStatusLine("Finished.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Refresh failed");
+      setCrawlStatusLine("Failed.");
     } finally {
+      stopCrawlPoll();
       setRefreshing(false);
     }
   };
@@ -291,6 +388,27 @@ export default function UpcomingPage() {
 
   return (
     <div className="app-page ui-page--constrained fm-page">
+      {crawlModalOpen ? (
+        <div
+          className="fm-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="fm-crawl-modal-title"
+        >
+          <div className="fm-modal">
+            <p className="fm-modal__title" id="fm-crawl-modal-title">
+              Crawl in progress
+            </p>
+            <p className="fm-modal__url">
+              Currently loading:{" "}
+              {crawlStatusLine !== "" ? crawlStatusLine : "…"}
+            </p>
+            <button type="button" className="ui-btn" onClick={closeCrawlModal}>
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
       <div className="ui-page-header">
         <div>
           <h1>Upcoming matches</h1>
@@ -337,16 +455,19 @@ export default function UpcomingPage() {
             title="Today"
             rows={buckets.today}
             showLiveCountdown
+            visualByGame={visualByGame}
           />
           <MatchTableSection
             title="Next 7 days"
             rows={buckets.week}
             showLiveCountdown={false}
+            visualByGame={visualByGame}
           />
           <MatchTableSection
             title="Later"
             rows={buckets.later}
             showLiveCountdown={false}
+            visualByGame={visualByGame}
           />
         </>
       )}

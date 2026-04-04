@@ -303,6 +303,6 @@
   font-family: var(--heading);
 }
 
-.ui-table tbody tr:hover {
+.ui-table tbody tr:hover:not(.fm-row--game-art) {
   background: var(--accent-bg);
 }

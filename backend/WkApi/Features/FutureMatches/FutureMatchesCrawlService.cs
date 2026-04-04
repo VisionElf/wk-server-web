@@ -22,6 +22,7 @@ public class FutureMatchesCrawlService
 
     private readonly HttpClient _http;
     private readonly FutureMatchesPageCacheStore _pageCache;
+    private readonly FutureMatchesCrawlProgress _crawlProgress;
     private readonly IOptions<FutureMatchesOptions> _options;
     private readonly FutureMatchesSettingsService _settings;
     private readonly ILogger<FutureMatchesCrawlService> _logger;
@@ -29,12 +30,14 @@ public class FutureMatchesCrawlService
     public FutureMatchesCrawlService(
         HttpClient http,
         FutureMatchesPageCacheStore pageCache,
+        FutureMatchesCrawlProgress crawlProgress,
         IOptions<FutureMatchesOptions> options,
         FutureMatchesSettingsService settings,
         ILogger<FutureMatchesCrawlService> logger)
     {
         _http = http;
         _pageCache = pageCache;
+        _crawlProgress = crawlProgress;
         _options = options;
         _settings = settings;
         _logger = logger;
@@ -51,6 +54,7 @@ public class FutureMatchesCrawlService
         var delay = Math.Max(0, opt.RequestDelayMs);
         var parser = new HtmlParser();
         var gameConfigs = await _settings.GetGamesForCrawlAsync(ct).ConfigureAwait(false);
+        var gameVisualsById = new Dictionary<string, FutureMatchesGameVisualDto>(StringComparer.OrdinalIgnoreCase);
         var pendingNetworkDelay = false;
 
         async Task<string> ReadLiquipediaPageAsync(string url, CancellationToken c)
@@ -59,6 +63,8 @@ public class FutureMatchesCrawlService
                 await Task.Delay(delay, c).ConfigureAwait(false);
             }
 
+            _crawlProgress.SetDetail(null);
+            _crawlProgress.SetCurrentUrl(url);
             var (html, fromNetwork) = await _pageCache.GetOrDownloadAsync(url, _http, c).ConfigureAwait(false);
             pendingNetworkDelay = fromNetwork;
             return html;
@@ -77,6 +83,28 @@ public class FutureMatchesCrawlService
             }
 
             var label = GameLabels.GetValueOrDefault(gameId, gameId);
+
+            try {
+                var mainUrl = $"https://liquipedia.net/{Uri.EscapeDataString(gameId)}/Main_Page";
+                _logger.LogInformation("Liquipedia Main_Page (visuals): {Url}", mainUrl);
+                var mainHtml = await ReadLiquipediaPageAsync(mainUrl, ct).ConfigureAwait(false);
+                var mainDoc = await parser.ParseDocumentAsync(mainHtml, ct).ConfigureAwait(false);
+                var (logoRaw, bannerRaw) = ExtractWikiMainPageVisuals(mainDoc);
+                gameVisualsById[gameId] = new FutureMatchesGameVisualDto {
+                    Game = gameId,
+                    GameLabel = label,
+                    Logo = AbsUrl(NormalizeAssetUrl(logoRaw)),
+                    Banner = AbsUrl(NormalizeAssetUrl(bannerRaw)),
+                };
+            }
+            catch (Exception ex) {
+                _logger.LogWarning(ex, "Failed to read Main_Page visuals for {GameId}", gameId);
+                gameVisualsById[gameId] = new FutureMatchesGameVisualDto {
+                    Game = gameId,
+                    GameLabel = label,
+                };
+                pendingNetworkDelay = false;
+            }
 
             try {
                 var hubUrl = $"https://liquipedia.net/{Uri.EscapeDataString(gameId)}/Liquipedia:Matches";
@@ -128,6 +156,9 @@ public class FutureMatchesCrawlService
         var payload = new FutureMatchesPayloadDto {
             LastUpdatedUtc = DateTime.UtcNow,
             Matches = merged,
+            GameVisuals = gameVisualsById.Values
+                .OrderBy(x => x.Game, StringComparer.OrdinalIgnoreCase)
+                .ToList(),
             RefreshErrors = errors.Count > 0 ? errors : null,
         };
 
@@ -408,12 +439,66 @@ public class FutureMatchesCrawlService
         }
 
         href = href.Trim();
+        if (href.StartsWith("//", StringComparison.Ordinal)) {
+            return "https:" + href;
+        }
+
         if (href.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
             || href.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
             return href;
         }
 
         return "https://liquipedia.net" + (href.StartsWith('/') ? href : "/" + href);
+    }
+
+    private static string? NormalizeAssetUrl(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) {
+            return null;
+        }
+
+        return System.Net.WebUtility.HtmlDecode(raw.Trim());
+    }
+
+    private static readonly Regex CssBackgroundImageUrl = new(
+        @"background-image\s*:\s*url\s*\(\s*(['""]?)(?<u>[^'"")]+)\1\s*\)",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
+        TimeSpan.FromMilliseconds(500));
+
+    /// <summary>Logo from header banner + banner art from <c>.header-banner</c> inline style.</summary>
+    private static (string? LogoSrc, string? BannerSrc) ExtractWikiMainPageVisuals(IDocument doc)
+    {
+        string? logo = null;
+        var logoScope = doc.QuerySelector(".header-banner__logo .logo--dark-theme")
+            ?? doc.QuerySelector(".header-banner__logo .logo--light-theme")
+            ?? doc.QuerySelector(".header-banner__logo");
+        var logoImg = logoScope?.QuerySelector("img")
+            ?? doc.QuerySelector(".header-banner__logo img");
+        if (logoImg != null) {
+            logo = logoImg.GetAttribute("src")
+                ?? logoImg.GetAttribute("data-src")
+                ?? logoImg.GetAttribute("data-lazy-src");
+        }
+
+        string? banner = null;
+        foreach (var el in doc.QuerySelectorAll(".header-banner, [class*='header-banner']")) {
+            banner = TryExtractBackgroundImageFromStyle(el.GetAttribute("style"));
+            if (!string.IsNullOrWhiteSpace(banner)) {
+                break;
+            }
+        }
+
+        return (logo, banner);
+    }
+
+    private static string? TryExtractBackgroundImageFromStyle(string? style)
+    {
+        if (string.IsNullOrWhiteSpace(style)) {
+            return null;
+        }
+
+        var m = CssBackgroundImageUrl.Match(style);
+        return m.Success ? m.Groups["u"].Value.Trim() : null;
     }
 
     private static void RememberTournamentRows(

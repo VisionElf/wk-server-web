@@ -10,43 +10,111 @@
   margin-top: 0.5rem;
 }
 
-.fm-table td {
+/* Fixed layout + same widths on th/td so header and body columns line up.
+   separate + 0 spacing: row backgrounds (banner) paint reliably; collapse often clips tr backgrounds. */
+.fm-table.ui-table {
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.fm-table.ui-table th,
+.fm-table.ui-table td {
   vertical-align: middle;
-  width: 20%;
-  max-width: 20%;
+  overflow: hidden;
+}
+
+.fm-table.ui-table th:nth-child(1),
+.fm-table.ui-table td:nth-child(1) {
+  width: 16%;
+}
+
+.fm-table.ui-table th:nth-child(2),
+.fm-table.ui-table td:nth-child(2) {
+  width: 22%;
+}
+
+.fm-table.ui-table th:nth-child(3),
+.fm-table.ui-table td:nth-child(3) {
+  width: 22%;
+}
+
+.fm-table.ui-table th:nth-child(4),
+.fm-table.ui-table td:nth-child(4) {
+  width: 18%;
+}
+
+.fm-table.ui-table th:nth-child(5),
+.fm-table.ui-table td:nth-child(5) {
+  width: 22%;
 }
 
 /*
-  Per-game row background (optional): on tr.fm-row set inline
-  --fm-row-bg-image: url(...); --fm-row-bg-opacity: 0.06 … 0.15
-  and add class fm-row--game-art to show the ::before layer. Omit the class until assets exist.
+  Full-row banner: background on <tr> (layered gradient + cover image).
+  Set --fm-row-bg-image on tr via inline style. Avoid position/z-index on tr/td (breaks table layout).
 */
 .fm-table tbody tr.fm-row {
-  position: relative;
   --fm-row-bg-image: none;
-  --fm-row-bg-opacity: 0.1;
 }
 
-.fm-table tbody tr.fm-row::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: var(--fm-row-bg-image);
+.fm-table tbody tr.fm-row.fm-row--game-art {
+  background-image: linear-gradient(
+    100deg,
+    var(--bg) 0%,
+    var(--bg) 18%,
+    rgba(255, 255, 255, 0.55) 55%,
+    rgba(255, 255, 255, 0.2) 100%
+  ),
+    var(--fm-row-bg-image);
+  background-size: 100% 100%, cover;
+  background-position: 0 0, center center;
   background-repeat: no-repeat;
-  background-position: right center;
-  background-size: auto 160%;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 0;
 }
 
-.fm-table tbody tr.fm-row.fm-row--game-art::before {
-  opacity: var(--fm-row-bg-opacity);
+@media (prefers-color-scheme: dark) {
+  .fm-table tbody tr.fm-row.fm-row--game-art {
+    background-image: linear-gradient(
+      100deg,
+      var(--bg) 0%,
+      var(--bg) 18%,
+      rgba(0, 0, 0, 0.5) 55%,
+      rgba(0, 0, 0, 0.15) 100%
+    ),
+      var(--fm-row-bg-image);
+    background-size: 100% 100%, cover;
+    background-position: 0 0, center center;
+    background-repeat: no-repeat;
+  }
 }
 
-.fm-table tbody tr.fm-row td {
-  position: relative;
-  z-index: 1;
+.fm-table tbody tr.fm-row.fm-row--game-art > td {
+  background-color: transparent;
+}
+
+.fm-game-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.fm-game-cell__icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--social-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.fm-game-cell__name {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text-h);
+  letter-spacing: -0.015em;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--bg) 70%, transparent);
 }
 
 .fm-team-cell {
@@ -259,4 +327,41 @@
 .fm-countdown--started {
   color: var(--accent);
   font-weight: 500;
+}
+
+.fm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.fm-modal {
+  width: min(520px, 100%);
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.fm-modal__title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-h);
+  font-family: var(--heading);
+}
+
+.fm-modal__url {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  word-break: break-all;
+  color: var(--text);
+  font-family: ui-monospace, "Consolas", monospace;
 }
