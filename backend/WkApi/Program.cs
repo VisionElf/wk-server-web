@@ -1,10 +1,26 @@
 using Microsoft.EntityFrameworkCore;
 using WkApi.Data;
 using WkApi.Data.Lti;
+using WkApi.Features.FutureMatches;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
+builder.Services.Configure<FutureMatchesOptions>(
+    builder.Configuration.GetSection(FutureMatchesOptions.SectionName));
+builder.Services.AddSingleton<FutureMatchesCacheStore>();
+builder.Services.AddHttpClient<FutureMatchesCrawlService>(client => {
+    client.Timeout = TimeSpan.FromSeconds(90);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(
+        "Mozilla/5.0 (compatible; WkServerWeb/1.0) FutureMatches (+https://liquipedia.net/)");
+});
+builder.Services.AddHttpClient<FutureMatchesImageCache>(client => {
+    client.Timeout = TimeSpan.FromSeconds(60);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(
+        "Mozilla/5.0 (compatible; WkServerWeb/1.0) FutureMatches (+https://liquipedia.net/)");
+});
+builder.Services.AddScoped<FutureMatchesCoordinator>();
 
 builder.Services.AddCors(options =>
 {

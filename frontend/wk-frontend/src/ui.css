@@ -22,11 +22,10 @@
   line-height: 145%;
   letter-spacing: 0.02em;
   color: var(--text);
-  max-width: 52ch;
 }
 
 .ui-page--constrained {
-  max-width: 1200px;
+  max-width: 100%;
 }
 
 /* —— Grid of cards —— */

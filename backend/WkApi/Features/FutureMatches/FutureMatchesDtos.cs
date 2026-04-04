@@ -1,0 +1,32 @@
+namespace WkApi.Features.FutureMatches;
+
+public class FutureMatchesPayloadDto
+{
+    public DateTime? LastUpdatedUtc { get; set; }
+    public List<FutureMatchItemDto> Matches { get; set; } = [];
+    public List<string>? RefreshErrors { get; set; }
+}
+
+public class FutureMatchItemDto
+{
+    public string Game { get; set; } = "";
+    public string GameLabel { get; set; } = "";
+    public long? DateUnix { get; set; }
+    public string? DateStr { get; set; }
+    public FutureMatchTeamDto? Team1 { get; set; }
+    public FutureMatchTeamDto? Team2 { get; set; }
+    public FutureMatchTournamentDto? Tournament { get; set; }
+}
+
+public class FutureMatchTeamDto
+{
+    public string Name { get; set; } = "";
+    public string? Href { get; set; }
+    public string? Icon { get; set; }
+}
+
+public class FutureMatchTournamentDto
+{
+    public string? Name { get; set; }
+    public string? Href { get; set; }
+}
