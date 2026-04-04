@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WkApi.Infrastructure.Logging;
 
-namespace WkApi.Controllers;
+namespace WkApi.Apps.Core.Controllers;
 
 [ApiController]
 [Route("api/server-logs")]

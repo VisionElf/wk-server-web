@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches;
 
 public class FutureMatchesCacheStore
 {

@@ -8,7 +8,6 @@ import {
   type FutureKnownGame,
   type FutureSettingsResponse,
 } from "../api/client";
-import "../future-matches.css";
 
 function labelFor(known: FutureKnownGame[], id: string): string {
   const k = known.find((x) => x.id.toLowerCase() === id.toLowerCase());

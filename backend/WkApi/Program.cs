@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using WkApi;
 using WkApi.Data;
 using WkApi.Data.Lti;
-using WkApi.Features.FutureMatches;
+using WkApi.Apps.FutureMatches;
+using WkApi.Infrastructure.Files;
 using WkApi.Infrastructure.Logging;
 using WkApi.Infrastructure.Security;
 
@@ -14,7 +15,7 @@ using WkApi.Infrastructure.Security;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<FormOptions>(options => {
-    options.MultipartBodyLengthLimit = 3_145_728;
+    options.MultipartBodyLengthLimit = FileUploadLimits.DefaultMaxBytes;
 });
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

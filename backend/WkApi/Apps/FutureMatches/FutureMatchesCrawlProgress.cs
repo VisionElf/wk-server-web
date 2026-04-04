@@ -1,4 +1,4 @@
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches;
 
 /// <summary>
 /// Live status while a matches refresh crawl runs (for UI polling).

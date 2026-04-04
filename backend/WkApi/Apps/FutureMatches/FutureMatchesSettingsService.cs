@@ -1,8 +1,9 @@
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
+using WkApi.Apps.FutureMatches.Crawler.Liquipedia;
 
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches;
 
 public class FutureMatchesSettingsService
 {
@@ -34,7 +35,7 @@ public class FutureMatchesSettingsService
     }
 
     public IReadOnlyList<FutureMatchesKnownGameDto> GetKnownGames() =>
-        FutureMatchesKnownGameLabels.All
+        KnownLiquipediaWikiGameLabels.All
             .OrderBy(kv => kv.Value, StringComparer.OrdinalIgnoreCase)
             .Select(kv => new FutureMatchesKnownGameDto(kv.Key, kv.Value))
             .ToList();

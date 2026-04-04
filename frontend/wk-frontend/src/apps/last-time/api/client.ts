@@ -1,3 +1,5 @@
+import { apiHeaders } from "../../../core/apiHeaders";
+
 const base = "/api/last-time";
 
 export type LtiItem = {
@@ -23,14 +25,14 @@ async function parseJson<T>(res: Response): Promise<T> {
 }
 
 export async function fetchLtiItems(): Promise<LtiItem[]> {
-  const res = await fetch(`${base}/items`);
+  const res = await fetch(`${base}/items`, { headers: apiHeaders() });
   return parseJson<LtiItem[]>(res);
 }
 
 export async function createLtiItem(name: string): Promise<LtiItem> {
   const res = await fetch(`${base}/items`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: apiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ name }),
   });
   return parseJson<LtiItem>(res);
@@ -42,7 +44,7 @@ export async function addLtiEvent(
 ): Promise<LtiItem> {
   const res = await fetch(`${base}/items/${itemId}/events`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: apiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(
       occurredAt != null ? { occurredAt } : {},
     ),
@@ -53,12 +55,16 @@ export async function addLtiEvent(
 export async function clearLtiHistory(itemId: string): Promise<LtiItem> {
   const res = await fetch(`${base}/items/${itemId}/history`, {
     method: "DELETE",
+    headers: apiHeaders(),
   });
   return parseJson<LtiItem>(res);
 }
 
 export async function deleteLtiItem(itemId: string): Promise<void> {
-  const res = await fetch(`${base}/items/${itemId}`, { method: "DELETE" });
+  const res = await fetch(`${base}/items/${itemId}`, {
+    method: "DELETE",
+    headers: apiHeaders(),
+  });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || res.statusText);
@@ -66,6 +72,8 @@ export async function deleteLtiItem(itemId: string): Promise<void> {
 }
 
 export async function fetchLtiHistory(limit = 150): Promise<LtiHistoryEntry[]> {
-  const res = await fetch(`${base}/history?limit=${limit}`);
+  const res = await fetch(`${base}/history?limit=${limit}`, {
+    headers: apiHeaders(),
+  });
   return parseJson<LtiHistoryEntry[]>(res);
 }

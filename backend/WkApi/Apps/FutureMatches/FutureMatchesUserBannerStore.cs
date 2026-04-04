@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches;
 
 /// <summary>
 /// Per-game banner images uploaded from the Follow settings UI. Files live next to the main cache directory.

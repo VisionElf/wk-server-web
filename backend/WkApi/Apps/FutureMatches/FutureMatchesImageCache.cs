@@ -4,7 +4,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches;
 
 /// <summary>
 /// Downloads remote image URLs once, stores under Data/Cache/img, serves via /api/future-matches/media/{file}.

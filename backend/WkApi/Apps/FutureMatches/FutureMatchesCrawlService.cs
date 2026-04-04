@@ -1,7 +1,8 @@
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Options;
+using WkApi.Apps.FutureMatches.Crawler.Liquipedia;
 
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches;
 
 public class FutureMatchesCrawlService
 {
@@ -11,7 +12,7 @@ public class FutureMatchesCrawlService
     private readonly IOptions<FutureMatchesOptions> _options;
     private readonly FutureMatchesSettingsService _settings;
     private readonly ILogger<FutureMatchesCrawlService> _logger;
-    private readonly FutureMatchesLiquipediaVisualsExtractor _visuals;
+    private readonly LiquipediaWikiVisualsExtractor _visuals;
 
     public FutureMatchesCrawlService(
         HttpClient http,
@@ -27,7 +28,7 @@ public class FutureMatchesCrawlService
         _options = options;
         _settings = settings;
         _logger = logger;
-        _visuals = new FutureMatchesLiquipediaVisualsExtractor(http, logger);
+        _visuals = new LiquipediaWikiVisualsExtractor(http, logger);
     }
 
     public async Task<(FutureMatchesPayloadDto Payload, List<string> Errors)> CrawlAsync(
@@ -69,10 +70,10 @@ public class FutureMatchesCrawlService
                 continue;
             }
 
-            var label = FutureMatchesKnownGameLabels.GetLabelOrId(gameId);
+            var label = KnownLiquipediaWikiGameLabels.GetLabelOrId(gameId);
 
             try {
-                var mainUrl = FutureMatchesLiquipediaUrls.MainPage(gameId);
+                var mainUrl = LiquipediaWikiUrls.MainPage(gameId);
                 _logger.LogInformation("Liquipedia Main_Page (visuals): {Url}", mainUrl);
                 var mainHtml = await ReadLiquipediaPageAsync(mainUrl, ct).ConfigureAwait(false);
                 var mainDoc = await parser.ParseDocumentAsync(mainHtml, ct).ConfigureAwait(false);
@@ -81,8 +82,8 @@ public class FutureMatchesCrawlService
                 gameVisualsById[gameId] = new FutureMatchesGameVisualDto {
                     Game = gameId,
                     GameLabel = label,
-                    Logo = FutureMatchesLiquipediaParsers.AbsUrl(FutureMatchesLiquipediaParsers.NormalizeAssetUrl(logoRaw)),
-                    Banner = FutureMatchesLiquipediaParsers.AbsUrl(FutureMatchesLiquipediaParsers.NormalizeAssetUrl(bannerRaw)),
+                    Logo = LiquipediaHtmlParsers.AbsUrl(LiquipediaHtmlParsers.NormalizeAssetUrl(logoRaw)),
+                    Banner = LiquipediaHtmlParsers.AbsUrl(LiquipediaHtmlParsers.NormalizeAssetUrl(bannerRaw)),
                 };
             }
             catch (Exception ex) {
@@ -95,11 +96,11 @@ public class FutureMatchesCrawlService
             }
 
             try {
-                var hubUrl = FutureMatchesLiquipediaUrls.MatchesHub(gameId);
+                var hubUrl = LiquipediaWikiUrls.MatchesHub(gameId);
                 _logger.LogInformation("Liquipedia hub: {Url}", hubUrl);
                 var hubHtml = await ReadLiquipediaPageAsync(hubUrl, ct).ConfigureAwait(false);
                 var hubDoc = await parser.ParseDocumentAsync(hubHtml, ct).ConfigureAwait(false);
-                all.AddRange(FutureMatchesLiquipediaParsers.ParseHubMatchesDocument(hubDoc, gameId, label, followIds));
+                all.AddRange(LiquipediaHtmlParsers.ParseHubMatchesDocument(hubDoc, gameId, label, followIds));
             }
             catch (Exception ex) {
                 _logger.LogWarning(ex, "Failed to crawl hub for {GameId}", gameId);
@@ -114,19 +115,19 @@ public class FutureMatchesCrawlService
 
                 var slug = teamId.Trim();
                 try {
-                    var teamUrl = FutureMatchesLiquipediaUrls.TeamPage(gameId, slug);
+                    var teamUrl = LiquipediaWikiUrls.TeamPage(gameId, slug);
                     _logger.LogInformation("Liquipedia team page: {Url}", teamUrl);
                     var teamHtml = await ReadLiquipediaPageAsync(teamUrl, ct).ConfigureAwait(false);
                     var teamDoc = await parser.ParseDocumentAsync(teamHtml, ct).ConfigureAwait(false);
-                    all.AddRange(FutureMatchesLiquipediaParsers.ParseTeamCarouselDocument(teamDoc, gameId, label, followIds));
+                    all.AddRange(LiquipediaHtmlParsers.ParseTeamCarouselDocument(teamDoc, gameId, label, followIds));
 
-                    var sourceTeam = FutureMatchesLiquipediaParsers.TryBuildSourceTeamFromTeamPage(teamDoc, gameId, slug)
+                    var sourceTeam = LiquipediaHtmlParsers.TryBuildSourceTeamFromTeamPage(teamDoc, gameId, slug)
                         ?? new FutureMatchTeamDto {
                             Name = slug.Replace('_', ' '),
-                            Href = FutureMatchesLiquipediaParsers.AbsUrl($"/{gameId}/{slug}"),
+                            Href = LiquipediaHtmlParsers.AbsUrl($"/{gameId}/{slug}"),
                         };
-                    var tourRows = FutureMatchesLiquipediaParsers.ParseUpcomingTournamentsSection(teamDoc, gameId, label, sourceTeam);
-                    FutureMatchesLiquipediaParsers.RememberTournamentRowsForTeam(
+                    var tourRows = LiquipediaHtmlParsers.ParseUpcomingTournamentsSection(teamDoc, gameId, label, sourceTeam);
+                    LiquipediaHtmlParsers.RememberTournamentRowsForTeam(
                         tournamentRowsByGameAndTeam, gameId, slug, tourRows);
                 }
                 catch (Exception ex) {
@@ -137,10 +138,10 @@ public class FutureMatchesCrawlService
             }
         }
 
-        var deduped = FutureMatchesLiquipediaParsers.DedupeMatches(all);
-        var merged = FutureMatchesLiquipediaParsers.MergeMatchesAndIdleTeamTournaments(
+        var deduped = LiquipediaHtmlParsers.DedupeMatches(all);
+        var merged = LiquipediaHtmlParsers.MergeMatchesAndIdleTeamTournaments(
             deduped, tournamentRowsByGameAndTeam, gameConfigs);
-        FutureMatchesLiquipediaParsers.SortMatchPayloadRows(merged);
+        LiquipediaHtmlParsers.SortMatchPayloadRows(merged);
 
         var payload = new FutureMatchesPayloadDto {
             LastUpdatedUtc = DateTime.UtcNow,

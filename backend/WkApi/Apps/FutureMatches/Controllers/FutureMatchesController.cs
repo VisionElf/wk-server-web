@@ -1,8 +1,10 @@
 using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using WkApi.Apps.FutureMatches;
+using WkApi.Infrastructure.Files;
 
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches.Controllers;
 
 [ApiController]
 [Route("api/future-matches")]
@@ -186,7 +188,7 @@ public class FutureMatchesController : ControllerBase
     }
 
     [HttpPost("settings/games/{gameId}/banner")]
-    [RequestSizeLimit(3_145_728)]
+    [RequestSizeLimit(FileUploadLimits.DefaultMaxBytes)]
     public async Task<ActionResult<FutureMatchesSettingsApiDto>> UploadGameBanner(
         string gameId,
         IFormFile? file,
@@ -196,7 +198,7 @@ public class FutureMatchesController : ControllerBase
             return BadRequest(new { message = "No file uploaded." });
         }
 
-        if (file.Length > 3_145_728) {
+        if (!FileUploadLimits.IsWithinMaxSize(file.Length)) {
             return BadRequest(new { message = "File too large (max 3 MB)." });
         }
 

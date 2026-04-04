@@ -1,5 +1,6 @@
-import { Suspense } from "react";
-import { Outlet } from "react-router-dom";
+import { Suspense, useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import { documentTitleForPath } from "../core/documentTitle";
 import { AppSubNav } from "./AppSubNav";
 import { Sidebar } from "./Sidebar";
 import "./shell.css";
@@ -9,6 +10,11 @@ function OutletFallback() {
 }
 
 export function AppShell() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    document.title = documentTitleForPath(pathname);
+  }, [pathname]);
+
   return (
     <div className="app-shell">
       <Sidebar />

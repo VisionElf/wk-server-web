@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches;
 
 /// <summary>
 /// Persists raw Liquipedia HTML per URL. Fresh network fetch only when cache entry is missing or older than TTL;

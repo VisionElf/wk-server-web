@@ -1,14 +1,6 @@
+import { apiHeaders } from "../../../core/apiHeaders";
+
 const base = "/api/future-matches";
-
-const apiKey = import.meta.env.VITE_WK_API_KEY as string | undefined;
-
-function fmHeaders(extra?: HeadersInit): HeadersInit {
-  const h = new Headers(extra);
-  if (apiKey) {
-    h.set("X-Api-Key", apiKey);
-  }
-  return h;
-}
 
 export type FutureMatchTeam = {
   name: string;
@@ -57,14 +49,14 @@ async function parseJson<T>(res: Response): Promise<T> {
 }
 
 export async function fetchFutureMatches(): Promise<FutureMatchesPayload> {
-  const res = await fetch(base, { headers: fmHeaders() });
+  const res = await fetch(base, { headers: apiHeaders() });
   return parseJson<FutureMatchesPayload>(res);
 }
 
 export async function refreshFutureMatches(): Promise<FutureMatchesPayload> {
   const res = await fetch(`${base}/refresh`, {
     method: "POST",
-    headers: fmHeaders(),
+    headers: apiHeaders(),
   });
   return parseJson<FutureMatchesPayload>(res);
 }
@@ -78,7 +70,7 @@ export type FutureMatchesPageCacheEntry = {
 export async function fetchFutureMatchesPageCache(): Promise<
   FutureMatchesPageCacheEntry[]
 > {
-  const res = await fetch(`${base}/page-cache`, { headers: fmHeaders() });
+  const res = await fetch(`${base}/page-cache`, { headers: apiHeaders() });
   return parseJson<FutureMatchesPageCacheEntry[]>(res);
 }
 
@@ -92,14 +84,14 @@ export type FutureMatchesImageCacheEntry = {
 export async function fetchFutureMatchesImageCache(): Promise<
   FutureMatchesImageCacheEntry[]
 > {
-  const res = await fetch(`${base}/image-cache`, { headers: fmHeaders() });
+  const res = await fetch(`${base}/image-cache`, { headers: apiHeaders() });
   return parseJson<FutureMatchesImageCacheEntry[]>(res);
 }
 
 export async function refetchFutureMatchesPageCache(url: string): Promise<void> {
   const res = await fetch(`${base}/page-cache/refetch`, {
     method: "POST",
-    headers: fmHeaders({ "Content-Type": "application/json" }),
+    headers: apiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ url }),
   });
   if (!res.ok) {
@@ -113,7 +105,7 @@ export async function refetchFutureMatchesImageCache(
 ): Promise<FutureMatchesImageCacheEntry> {
   const res = await fetch(`${base}/image-cache/refetch`, {
     method: "POST",
-    headers: fmHeaders({ "Content-Type": "application/json" }),
+    headers: apiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ sourceUrl }),
   });
   return parseJson<FutureMatchesImageCacheEntry>(res);
@@ -126,7 +118,7 @@ export type FutureMatchesCrawlProgress = {
 };
 
 export async function fetchFutureMatchesCrawlProgress(): Promise<FutureMatchesCrawlProgress> {
-  const res = await fetch(`${base}/crawl-progress`, { headers: fmHeaders() });
+  const res = await fetch(`${base}/crawl-progress`, { headers: apiHeaders() });
   return parseJson<FutureMatchesCrawlProgress>(res);
 }
 
@@ -147,7 +139,7 @@ export type FutureSettingsResponse = {
 };
 
 export async function fetchFutureSettings(): Promise<FutureSettingsResponse> {
-  const res = await fetch(`${base}/settings`, { headers: fmHeaders() });
+  const res = await fetch(`${base}/settings`, { headers: apiHeaders() });
   return parseJson<FutureSettingsResponse>(res);
 }
 
@@ -156,7 +148,7 @@ export async function saveFutureSettings(
 ): Promise<FutureSettingsResponse> {
   const res = await fetch(`${base}/settings`, {
     method: "PUT",
-    headers: fmHeaders({ "Content-Type": "application/json" }),
+    headers: apiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ games }),
   });
   if (!res.ok) {
@@ -186,7 +178,7 @@ export async function uploadFutureGameBanner(
   fd.append("file", file);
   const res = await fetch(
     `${base}/settings/games/${encodeURIComponent(gameId)}/banner`,
-    { method: "POST", headers: fmHeaders(), body: fd },
+    { method: "POST", headers: apiHeaders(), body: fd },
   );
   if (!res.ok) {
     throw new Error(await parseSettingsError(res));
@@ -199,7 +191,7 @@ export async function deleteFutureGameBanner(
 ): Promise<FutureSettingsResponse> {
   const res = await fetch(
     `${base}/settings/games/${encodeURIComponent(gameId)}/banner`,
-    { method: "DELETE", headers: fmHeaders() },
+    { method: "DELETE", headers: apiHeaders() },
   );
   if (!res.ok) {
     throw new Error(await parseSettingsError(res));

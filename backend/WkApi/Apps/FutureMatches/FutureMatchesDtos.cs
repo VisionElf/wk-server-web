@@ -1,4 +1,4 @@
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches;
 
 public class FutureMatchesPayloadDto
 {

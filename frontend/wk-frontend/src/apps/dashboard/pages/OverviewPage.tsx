@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { apiHeaders } from "../../../core/apiHeaders";
 
 export default function OverviewPage() {
   const [message, setMessage] = useState("Loading…");
 
   useEffect(() => {
-    fetch("/api/hello")
+    fetch("/api/hello", { headers: apiHeaders() })
       .then((res) => res.json())
       .then((data: { message?: string }) =>
         setMessage(data.message ?? "No message"),

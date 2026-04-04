@@ -1,4 +1,3 @@
-import "../future-matches.css";
 import { MatchTableSection } from "./upcoming/UpcomingMatchTable";
 import { useUpcomingMatches } from "./upcoming/useUpcomingMatches";
 

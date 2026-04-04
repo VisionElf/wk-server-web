@@ -2,11 +2,11 @@ using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
-using AngleSharp.Html.Parser;
+using WkApi.Apps.FutureMatches;
 
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches.Crawler.Liquipedia;
 
-public sealed class FutureMatchesLiquipediaVisualsExtractor
+public sealed class LiquipediaWikiVisualsExtractor
 {
     private static readonly Regex CssBackgroundImageUrl = new(
         @"background-image\s*:\s*url\s*\(\s*(['""]?)(?<u>[^'"")]+)\1\s*\)",
@@ -21,7 +21,7 @@ public sealed class FutureMatchesLiquipediaVisualsExtractor
     private readonly HttpClient _http;
     private readonly ILogger<FutureMatchesCrawlService> _logger;
 
-    public FutureMatchesLiquipediaVisualsExtractor(
+    public LiquipediaWikiVisualsExtractor(
         HttpClient http,
         ILogger<FutureMatchesCrawlService> logger)
     {

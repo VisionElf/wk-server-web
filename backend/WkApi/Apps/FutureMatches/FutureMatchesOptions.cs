@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches;
 
 public class FutureMatchesOptions
 {

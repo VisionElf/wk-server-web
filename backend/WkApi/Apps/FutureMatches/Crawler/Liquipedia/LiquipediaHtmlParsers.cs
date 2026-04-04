@@ -2,10 +2,11 @@ using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
+using WkApi.Apps.FutureMatches;
 
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches.Crawler.Liquipedia;
 
-public static class FutureMatchesLiquipediaParsers
+public static class LiquipediaHtmlParsers
 {
     public static List<FutureMatchItemDto> DedupeMatches(List<FutureMatchItemDto> matches)
     {

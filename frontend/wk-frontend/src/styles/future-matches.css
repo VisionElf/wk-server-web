@@ -1,4 +1,4 @@
-/* Future-matches–specific layout; tokens from index.css / ui.css */
+/* Liquipedia / matches UI (.fm-*); loaded globally; tokens from index.css / ui.css */
 
 .fm-cache-tabs {
   display: flex;

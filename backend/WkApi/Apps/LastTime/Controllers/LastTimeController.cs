@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using WkApi.Data;
 using WkApi.Data.Lti;
 
-namespace WkApi.Controllers;
+namespace WkApi.Apps.LastTime.Controllers;
 
 [ApiController]
 [Route("api/last-time")]

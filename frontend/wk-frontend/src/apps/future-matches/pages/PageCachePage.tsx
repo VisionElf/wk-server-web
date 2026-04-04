@@ -7,7 +7,6 @@ import {
   type FutureMatchesImageCacheEntry,
   type FutureMatchesPageCacheEntry,
 } from "../api/client";
-import "../future-matches.css";
 
 type CacheTab = "html" | "img";
 

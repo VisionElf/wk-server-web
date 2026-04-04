@@ -1,7 +1,7 @@
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches.Crawler.Liquipedia;
 
 /// <summary>Canonical Liquipedia wiki id → display label (shared by settings and crawl).</summary>
-public static class FutureMatchesKnownGameLabels
+public static class KnownLiquipediaWikiGameLabels
 {
     private static readonly Dictionary<string, string> ById = new(StringComparer.OrdinalIgnoreCase) {
         ["counterstrike"] = "Counter-Strike",

@@ -33,7 +33,6 @@ New apps are registered in `src/core/appRegistry.ts` and `src/router.tsx` (see c
 - **Entry:** `Program.cs` — controllers, CORS, EF Core, Future Matches services, in-memory log buffer, **database migrations on startup**.
 - **API surface (examples):**
   - `/api/hello` — smoke test.
-  - `/api/health/db` — PostgreSQL connectivity check.
   - `/api/last-time/*` — CRUD-style API for “last time” items and history.
   - `/api/future-matches/*` — cached match payload, refresh crawl, page/image cache admin, settings, user banner uploads, static media paths.
   - `/api/server-logs` — recent log lines for the Console UI.

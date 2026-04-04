@@ -1,6 +1,6 @@
-namespace WkApi.Features.FutureMatches;
+namespace WkApi.Apps.FutureMatches.Crawler.Liquipedia;
 
-public static class FutureMatchesLiquipediaUrls
+public static class LiquipediaWikiUrls
 {
     public static string MainPage(string gameId) =>
         $"https://liquipedia.net/{Uri.EscapeDataString(gameId)}/Main_Page";
