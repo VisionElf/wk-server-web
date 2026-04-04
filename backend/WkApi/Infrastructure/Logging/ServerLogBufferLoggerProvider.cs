@@ -15,6 +15,21 @@ public sealed class ServerLogBufferLoggerProvider(ServerLogBuffer buffer) : ILog
     {
     }
 
+    /// <summary>
+    /// HTTP request start/finish lines (page and API calls) use this category at Information.
+    /// </summary>
+    private static bool IsMicrosoftHostingRequestLog(string category) =>
+        category.Equals("Microsoft.AspNetCore.Hosting.Diagnostics", StringComparison.Ordinal);
+
+    /// <summary>
+    /// Avoid echo: polling this endpoint would fill the buffer with self-referential request lines.
+    /// </summary>
+    private const string ServerLogsPathFragment = "/api/server-logs";
+
+    private static bool IsServerLogsPollNoise(string category, string message) =>
+        IsMicrosoftHostingRequestLog(category)
+        && message.Contains(ServerLogsPathFragment, StringComparison.OrdinalIgnoreCase);
+
     private sealed class BufferLogger(ServerLogBuffer buffer, string category) : ILogger
     {
         public IDisposable? BeginScope<TState>(TState state)
@@ -35,11 +50,16 @@ public sealed class ServerLogBufferLoggerProvider(ServerLogBuffer buffer) : ILog
             }
 
             if (logLevel < LogLevel.Warning
-                && category.StartsWith("Microsoft.", StringComparison.Ordinal)) {
+                && category.StartsWith("Microsoft.", StringComparison.Ordinal)
+                && !IsMicrosoftHostingRequestLog(category)) {
                 return;
             }
 
             var message = formatter(state, exception);
+            if (IsServerLogsPollNoise(category, message)) {
+                return;
+            }
+
             var ts = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
             var line = $"{ts}Z [{logLevel}] {category}: {message}";
             buffer.AppendLine(line);
