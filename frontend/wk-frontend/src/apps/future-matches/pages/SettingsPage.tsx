@@ -12,6 +12,11 @@ function labelFor(known: FutureKnownGame[], id: string): string {
   return k?.label ?? id;
 }
 
+/** Normalize user input toward Liquipedia page title (spaces → underscores). */
+function normalizeTeamPageId(raw: string): string {
+  return raw.trim().replace(/\s+/g, "_");
+}
+
 export default function SettingsPage() {
   const [knownGames, setKnownGames] = useState<FutureKnownGame[]>([]);
   const [games, setGames] = useState<FutureGameSettings[]>([]);
@@ -32,7 +37,7 @@ export default function SettingsPage() {
       setGames(
         data.games.map((g) => ({
           id: g.id,
-          followTeams: [...g.followTeams],
+          followTeamIds: [...g.followTeamIds],
         })),
       );
     } catch (e) {
@@ -64,7 +69,7 @@ export default function SettingsPage() {
     if (idsInUse.has(id.toLowerCase())) {
       return;
     }
-    setGames((prev) => [...prev, { id, followTeams: [] }]);
+    setGames((prev) => [...prev, { id, followTeamIds: [] }]);
     setAddSelectId("");
   };
 
@@ -73,7 +78,7 @@ export default function SettingsPage() {
     if (id === "" || idsInUse.has(id)) {
       return;
     }
-    setGames((prev) => [...prev, { id, followTeams: [] }]);
+    setGames((prev) => [...prev, { id, followTeamIds: [] }]);
     setCustomWikiId("");
   };
 
@@ -82,8 +87,8 @@ export default function SettingsPage() {
   };
 
   const addTeam = (gameId: string) => {
-    const raw = (draftTeam[gameId] ?? "").trim();
-    if (raw === "") {
+    const id = normalizeTeamPageId(draftTeam[gameId] ?? "");
+    if (id === "") {
       return;
     }
     setGames((prev) =>
@@ -91,10 +96,12 @@ export default function SettingsPage() {
         if (g.id !== gameId) {
           return g;
         }
-        if (g.followTeams.some((t) => t.toLowerCase() === raw.toLowerCase())) {
+        if (
+          g.followTeamIds.some((t) => t.toLowerCase() === id.toLowerCase())
+        ) {
           return g;
         }
-        return { ...g, followTeams: [...g.followTeams, raw] };
+        return { ...g, followTeamIds: [...g.followTeamIds, id] };
       }),
     );
     setDraftTeam((d) => ({ ...d, [gameId]: "" }));
@@ -104,7 +111,7 @@ export default function SettingsPage() {
     setGames((prev) =>
       prev.map((g) =>
         g.id === gameId
-          ? { ...g, followTeams: g.followTeams.filter((t) => t !== team) }
+          ? { ...g, followTeamIds: g.followTeamIds.filter((t) => t !== team) }
           : g,
       ),
     );
@@ -120,7 +127,7 @@ export default function SettingsPage() {
       setGames(
         data.games.map((g) => ({
           id: g.id,
-          followTeams: [...g.followTeams],
+          followTeamIds: [...g.followTeamIds],
         })),
       );
       setSavedOk(true);
@@ -141,9 +148,11 @@ export default function SettingsPage() {
         <div>
           <h1>Followed games &amp; teams</h1>
           <p className="ui-lead">
-            Only matches where at least one team name contains one of your
-            strings (case-insensitive) are kept. After saving, use{" "}
-            <strong>Upcoming → Refresh</strong> to recrawl Liquipedia.
+            Add Liquipedia <strong>team page IDs</strong> (URL title, e.g.{" "}
+            <code>Team_Vitality</code>, <code>Karmine_Corp</code>). Matches are
+            kept when a team link matches one of those IDs (case-insensitive).
+            After saving, use <strong>Upcoming → Refresh</strong> to recrawl
+            Liquipedia.
           </p>
         </div>
         <button
@@ -220,11 +229,11 @@ export default function SettingsPage() {
                 </button>
               </div>
               <p className="ui-lead fm-settings-hint">
-                Substring match on Liquipedia team names (e.g.{" "}
-                <code>Karmine Corp</code>, <code>Vitality</code>).
+                Page title segment from the team wiki URL (underscores, not
+                spaces).
               </p>
               <div className="fm-tag-row" role="list">
-                {g.followTeams.map((t) => (
+                {g.followTeamIds.map((t) => (
                   <span key={t} className="fm-tag" role="listitem">
                     {t}
                     <button
@@ -242,7 +251,7 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   className="ui-input"
-                  placeholder="Team name substring"
+                  placeholder="e.g. Team_Vitality"
                   value={draftTeam[g.id] ?? ""}
                   onChange={(e) =>
                     setDraftTeam((d) => ({ ...d, [g.id]: e.target.value }))
@@ -254,7 +263,7 @@ export default function SettingsPage() {
                     }
                   }}
                   maxLength={80}
-                  aria-label={`Add team filter for ${g.id}`}
+                  aria-label={`Add team page id for ${g.id}`}
                 />
                 <button
                   type="button"

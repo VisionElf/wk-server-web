@@ -11,7 +11,10 @@ export type FutureMatchTournament = {
   href?: string | null;
 };
 
+export type FutureMatchKind = "match" | "tournament";
+
 export type FutureMatchItem = {
+  kind?: FutureMatchKind | null;
   game: string;
   gameLabel: string;
   dateUnix?: number | null;
@@ -47,7 +50,7 @@ export async function refreshFutureMatches(): Promise<FutureMatchesPayload> {
 
 export type FutureGameSettings = {
   id: string;
-  followTeams: string[];
+  followTeamIds: string[];
 };
 
 export type FutureKnownGame = {

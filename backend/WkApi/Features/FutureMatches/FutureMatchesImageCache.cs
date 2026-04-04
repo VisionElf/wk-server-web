@@ -6,7 +6,8 @@ using Microsoft.Extensions.Options;
 namespace WkApi.Features.FutureMatches;
 
 /// <summary>
-/// Downloads Liquipedia team icon URLs once, stores under Data/Cache/img, serves via /api/future-matches/media/{file}.
+/// Downloads remote image URLs once, stores under Data/Cache/img, serves via /api/future-matches/media/{file}.
+/// Cached files are never expired or deleted by this service (permanent local copy once fetched).
 /// </summary>
 public class FutureMatchesImageCache
 {
@@ -81,6 +82,7 @@ public class FutureMatchesImageCache
             Directory.CreateDirectory(_imgDir);
             var hash = HashFileName(icon);
 
+            // Reuse existing file forever (no TTL); hash is content-addressed by source URL.
             string? existing = FindExistingByHash(hash);
             if (existing != null) {
                 return MediaPathPrefix + existing;

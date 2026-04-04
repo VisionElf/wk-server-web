@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 
@@ -7,6 +8,11 @@ public class FutureMatchesSettingsService
 {
     private static readonly Regex SafeGameId = new(
         @"^[a-z][a-z0-9_-]{1,39}$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    /// <summary>Liquipedia page title segment (Team_Vitality, Karmine_Corp, …).</summary>
+    private static readonly Regex SafeTeamPageId = new(
+        @"^[A-Za-z0-9_.-]{2,80}$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private static readonly Dictionary<string, string> KnownGameLabels = new(StringComparer.OrdinalIgnoreCase) {
@@ -63,6 +69,7 @@ public class FutureMatchesSettingsService
     {
         Normalize(incoming);
         ValidateOrThrow(incoming);
+        StripLegacyFollowTeamsForSave(incoming);
         await _store.WriteAsync(incoming, ct).ConfigureAwait(false);
         _logger.LogInformation("FutureMatches settings saved ({Count} games)", incoming.Games.Count);
         return new FutureMatchesSettingsApiDto {
@@ -71,10 +78,18 @@ public class FutureMatchesSettingsService
         };
     }
 
+    private static void StripLegacyFollowTeamsForSave(FutureMatchesUserSettingsFileDto dto)
+    {
+        foreach (var g in dto.Games) {
+            g.FollowTeams = null;
+        }
+    }
+
     private async Task<FutureMatchesUserSettingsFileDto> GetOrSeedAsync(CancellationToken ct)
     {
         var existing = await _store.ReadAsync(ct).ConfigureAwait(false);
         if (existing != null) {
+            MigrateLegacyFollowTeams(existing);
             return existing;
         }
 
@@ -82,6 +97,7 @@ public class FutureMatchesSettingsService
         try {
             existing = await _store.ReadAsync(ct).ConfigureAwait(false);
             if (existing != null) {
+                MigrateLegacyFollowTeams(existing);
                 return existing;
             }
 
@@ -90,13 +106,14 @@ public class FutureMatchesSettingsService
                     .Where(g => !string.IsNullOrWhiteSpace(g.Id))
                     .Select(g => new FutureMatchesGameOptions {
                         Id = g.Id.Trim(),
-                        FollowTeams = g.FollowTeams
-                            .Where(t => !string.IsNullOrWhiteSpace(t))
-                            .Select(t => t.Trim())
-                            .ToList(),
+                        FollowTeamIds = NormalizeTeamIdList(
+                            g.FollowTeamIds.Count > 0
+                                ? g.FollowTeamIds
+                                : MigrateLegacyStrings(g.FollowTeams)),
                     })
                     .ToList(),
             };
+            StripLegacyFollowTeamsForSave(seed);
             await _store.WriteAsync(seed, ct).ConfigureAwait(false);
             return seed;
         }
@@ -105,17 +122,62 @@ public class FutureMatchesSettingsService
         }
     }
 
+    /// <summary>Copy legacy followTeams (display names) into followTeamIds using space → underscore heuristic.</summary>
+    private static void MigrateLegacyFollowTeams(FutureMatchesUserSettingsFileDto dto)
+    {
+        foreach (var g in dto.Games) {
+            if (g.FollowTeamIds.Count > 0) {
+                continue;
+            }
+
+            if (g.FollowTeams == null || g.FollowTeams.Count == 0) {
+                continue;
+            }
+
+            g.FollowTeamIds = MigrateLegacyStrings(g.FollowTeams);
+        }
+    }
+
+    private static List<string> MigrateLegacyStrings(List<string>? legacy)
+    {
+        var list = new List<string>();
+        if (legacy == null) {
+            return list;
+        }
+
+        foreach (var leg in legacy) {
+            if (string.IsNullOrWhiteSpace(leg)) {
+                continue;
+            }
+
+            var id = leg.Trim();
+            if (id.Contains(' ', StringComparison.Ordinal)) {
+                id = id.Replace(" ", "_", StringComparison.Ordinal);
+            }
+
+            if (!list.Contains(id, StringComparer.OrdinalIgnoreCase)) {
+                list.Add(id);
+            }
+        }
+
+        return list;
+    }
+
+    private static List<string> NormalizeTeamIdList(IEnumerable<string> ids) =>
+        ids
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Select(t => t.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
     private static void Normalize(FutureMatchesUserSettingsFileDto dto)
     {
         dto.Games = dto.Games
             .Where(g => !string.IsNullOrWhiteSpace(g.Id))
             .Select(g => new FutureMatchesGameOptions {
                 Id = g.Id.Trim(),
-                FollowTeams = g.FollowTeams
-                    .Where(t => !string.IsNullOrWhiteSpace(t))
-                    .Select(t => t.Trim())
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList(),
+                FollowTeamIds = NormalizeTeamIdList(g.FollowTeamIds),
+                FollowTeams = null,
             })
             .ToList();
     }
@@ -142,17 +204,18 @@ public class FutureMatchesSettingsService
                 throw new ArgumentException($"Duplicate game id '{id}'.");
             }
 
-            if (g.FollowTeams.Count > 40) {
-                throw new ArgumentException($"Too many teams for '{id}' (max 40).");
+            if (g.FollowTeamIds.Count > 40) {
+                throw new ArgumentException($"Too many team ids for '{id}' (max 40).");
             }
 
-            foreach (var t in g.FollowTeams) {
+            foreach (var t in g.FollowTeamIds) {
                 if (string.IsNullOrWhiteSpace(t)) {
-                    throw new ArgumentException($"Empty team name in game '{id}'.");
+                    throw new ArgumentException($"Empty team page id in game '{id}'.");
                 }
 
-                if (t.Length > 80) {
-                    throw new ArgumentException($"Team name too long in game '{id}'.");
+                if (!SafeTeamPageId.IsMatch(t.Trim())) {
+                    throw new ArgumentException(
+                        $"Invalid team page id '{t}' for game '{id}'. Use the Liquipedia page title (e.g. Team_Vitality, Karmine_Corp).");
                 }
             }
         }

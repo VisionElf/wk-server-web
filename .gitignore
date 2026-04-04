@@ -16,3 +16,5 @@ backend/WkApi/Data/Cache/future-matches.json
 backend/WkApi/Data/Cache/future-matches-settings.json
 backend/WkApi/Data/Cache/img/*
 !backend/WkApi/Data/Cache/img/.gitkeep
+backend/WkApi/Data/Cache/future-matches-page-cache/*
+!backend/WkApi/Data/Cache/future-matches-page-cache/.gitkeep

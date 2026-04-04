@@ -22,7 +22,8 @@ export default function AboutPage() {
         There is no database: results are stored in a JSON file on the API
         server under <code>Data/Cache/</code>. Followed games and teams live in{" "}
         <code>future-matches-settings.json</code> (editable from the{" "}
-        <strong>Follow</strong> tab). Team logos are downloaded once
+        <strong>Follow</strong> tab) as Liquipedia wiki IDs and team page titles
+        (e.g. <code>Team_Vitality</code>). Team logos are downloaded once
         and cached as files next to that JSON; the API serves them from{" "}
         <code>/api/future-matches/media/…</code>. With Docker Compose, a named
         volume keeps that folder across container restarts.

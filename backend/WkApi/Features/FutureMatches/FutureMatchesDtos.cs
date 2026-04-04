@@ -9,6 +9,9 @@ public class FutureMatchesPayloadDto
 
 public class FutureMatchItemDto
 {
+    /// <summary><c>match</c> (default) or <c>tournament</c> (upcoming event row when team has no parsed matches).</summary>
+    public string Kind { get; set; } = "match";
+
     public string Game { get; set; } = "";
     public string GameLabel { get; set; } = "";
     public long? DateUnix { get; set; }

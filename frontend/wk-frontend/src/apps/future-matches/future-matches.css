@@ -12,6 +12,41 @@
 
 .fm-table td {
   vertical-align: middle;
+  width: 20%;
+  max-width: 20%;
+}
+
+/*
+  Per-game row background (optional): on tr.fm-row set inline
+  --fm-row-bg-image: url(...); --fm-row-bg-opacity: 0.06 … 0.15
+  and add class fm-row--game-art to show the ::before layer. Omit the class until assets exist.
+*/
+.fm-table tbody tr.fm-row {
+  position: relative;
+  --fm-row-bg-image: none;
+  --fm-row-bg-opacity: 0.1;
+}
+
+.fm-table tbody tr.fm-row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--fm-row-bg-image);
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: auto 160%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fm-table tbody tr.fm-row.fm-row--game-art::before {
+  opacity: var(--fm-row-bg-opacity);
+}
+
+.fm-table tbody tr.fm-row td {
+  position: relative;
+  z-index: 1;
 }
 
 .fm-team-cell {
@@ -182,4 +217,46 @@
 
 .fm-tag-remove:hover {
   color: var(--danger-fg);
+}
+
+.fm-match-section {
+  margin-top: 1.35rem;
+}
+
+.fm-match-section:first-of-type {
+  margin-top: 0.5rem;
+}
+
+.fm-match-section-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-h);
+  font-family: var(--heading);
+}
+
+.fm-match-section-sub {
+  margin: 0 0 0.65rem !important;
+  font-size: 0.85rem !important;
+  opacity: 0.92;
+}
+
+.fm-match-section-empty {
+  margin: 0 0 0.25rem !important;
+  font-size: 0.88rem !important;
+  opacity: 0.85;
+}
+
+.fm-countdown {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  opacity: 0.9;
+}
+
+.fm-countdown--started {
+  color: var(--accent);
+  font-weight: 500;
 }

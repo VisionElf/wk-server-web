@@ -10,6 +10,7 @@ builder.Services.AddControllers();
 builder.Services.Configure<FutureMatchesOptions>(
     builder.Configuration.GetSection(FutureMatchesOptions.SectionName));
 builder.Services.AddSingleton<FutureMatchesCacheStore>();
+builder.Services.AddSingleton<FutureMatchesPageCacheStore>();
 builder.Services.AddSingleton<FutureMatchesSettingsStore>();
 builder.Services.AddSingleton<FutureMatchesSettingsService>();
 builder.Services.AddHttpClient<FutureMatchesCrawlService>(client => {

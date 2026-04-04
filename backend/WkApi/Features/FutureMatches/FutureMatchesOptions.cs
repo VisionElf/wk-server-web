@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace WkApi.Features.FutureMatches;
 
 public class FutureMatchesOptions
@@ -10,8 +12,14 @@ public class FutureMatchesOptions
     /// <summary>User-editable games/teams (seeded from appsettings on first run).</summary>
     public string SettingsFileRelativePath { get; set; } = "Data/Cache/future-matches-settings.json";
 
-    /// <summary>Delay between Liquipedia requests per game (politeness).</summary>
-    public int RequestDelayMs { get; set; } = 750;
+    /// <summary>Raw HTML cache directory (per-URL files, 24h TTL by default).</summary>
+    public string HtmlPageCacheDirectoryRelativePath { get; set; } = "Data/Cache/future-matches-page-cache";
+
+    /// <summary>How long cached Liquipedia HTML is reused before refetching.</summary>
+    public double HtmlPageCacheTtlHours { get; set; } = 24;
+
+    /// <summary>Delay between Liquipedia page fetches (politeness).</summary>
+    public int RequestDelayMs { get; set; } = 2000;
 
     public List<FutureMatchesGameOptions> Games { get; set; } = [];
 }
@@ -21,6 +29,11 @@ public class FutureMatchesGameOptions
     /// <summary>Liquipedia wiki id: counterstrike, leagueoflegends, valorant, rocketleague.</summary>
     public string Id { get; set; } = "";
 
-    /// <summary>Substring match (case-insensitive) against team names on the match row.</summary>
-    public List<string> FollowTeams { get; set; } = [];
+    /// <summary>Liquipedia team page titles (URL segments), e.g. Team_Vitality, Karmine_Corp.</summary>
+    public List<string> FollowTeamIds { get; set; } = [];
+
+    /// <summary>Legacy settings key; migrated to FollowTeamIds on read when FollowTeamIds is empty.</summary>
+    [JsonPropertyName("followTeams")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<string>? FollowTeams { get; set; }
 }
