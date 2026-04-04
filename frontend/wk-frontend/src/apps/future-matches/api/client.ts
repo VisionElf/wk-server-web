@@ -44,3 +44,46 @@ export async function refreshFutureMatches(): Promise<FutureMatchesPayload> {
   const res = await fetch(`${base}/refresh`, { method: "POST" });
   return parseJson<FutureMatchesPayload>(res);
 }
+
+export type FutureGameSettings = {
+  id: string;
+  followTeams: string[];
+};
+
+export type FutureKnownGame = {
+  id: string;
+  label: string;
+};
+
+export type FutureSettingsResponse = {
+  games: FutureGameSettings[];
+  knownGames: FutureKnownGame[];
+};
+
+export async function fetchFutureSettings(): Promise<FutureSettingsResponse> {
+  const res = await fetch(`${base}/settings`);
+  return parseJson<FutureSettingsResponse>(res);
+}
+
+export async function saveFutureSettings(
+  games: FutureGameSettings[],
+): Promise<FutureSettingsResponse> {
+  const res = await fetch(`${base}/settings`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ games }),
+  });
+  if (!res.ok) {
+    let msg = res.statusText;
+    try {
+      const j = (await res.json()) as { message?: string };
+      if (j.message != null && j.message !== "") {
+        msg = j.message;
+      }
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg);
+  }
+  return res.json() as Promise<FutureSettingsResponse>;
+}

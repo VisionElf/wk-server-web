@@ -11,19 +11,27 @@ public class FutureMatchesCrawlService
         ["leagueoflegends"] = "League of Legends",
         ["valorant"] = "Valorant",
         ["rocketleague"] = "Rocket League",
+        ["dota2"] = "Dota 2",
+        ["starcraft2"] = "StarCraft II",
+        ["overwatch"] = "Overwatch",
+        ["rainbowsix"] = "Rainbow Six",
+        ["pubgmobile"] = "PUBG Mobile",
     };
 
     private readonly HttpClient _http;
     private readonly IOptions<FutureMatchesOptions> _options;
+    private readonly FutureMatchesSettingsService _settings;
     private readonly ILogger<FutureMatchesCrawlService> _logger;
 
     public FutureMatchesCrawlService(
         HttpClient http,
         IOptions<FutureMatchesOptions> options,
+        FutureMatchesSettingsService settings,
         ILogger<FutureMatchesCrawlService> logger)
     {
         _http = http;
         _options = options;
+        _settings = settings;
         _logger = logger;
     }
 
@@ -35,8 +43,9 @@ public class FutureMatchesCrawlService
         var opt = _options.Value;
         var delay = Math.Max(0, opt.RequestDelayMs);
         var parser = new HtmlParser();
+        var gameConfigs = await _settings.GetGamesForCrawlAsync(ct).ConfigureAwait(false);
 
-        foreach (var game in opt.Games) {
+        foreach (var game in gameConfigs) {
             if (string.IsNullOrWhiteSpace(game.Id)) {
                 continue;
             }

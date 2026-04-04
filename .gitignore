@@ -13,5 +13,6 @@ $RECYCLE.BIN/
 
 # FutureMatches API crawl cache (regenerated on refresh)
 backend/WkApi/Data/Cache/future-matches.json
+backend/WkApi/Data/Cache/future-matches-settings.json
 backend/WkApi/Data/Cache/img/*
 !backend/WkApi/Data/Cache/img/.gitkeep

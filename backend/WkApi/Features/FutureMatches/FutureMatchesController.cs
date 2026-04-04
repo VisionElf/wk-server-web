@@ -8,13 +8,16 @@ public class FutureMatchesController : ControllerBase
 {
     private readonly FutureMatchesCoordinator _coordinator;
     private readonly FutureMatchesImageCache _imageCache;
+    private readonly FutureMatchesSettingsService _settings;
 
     public FutureMatchesController(
         FutureMatchesCoordinator coordinator,
-        FutureMatchesImageCache imageCache)
+        FutureMatchesImageCache imageCache,
+        FutureMatchesSettingsService settings)
     {
         _coordinator = coordinator;
         _imageCache = imageCache;
+        _settings = settings;
     }
 
     [HttpGet]
@@ -29,6 +32,27 @@ public class FutureMatchesController : ControllerBase
     {
         var data = await _coordinator.RefreshAsync(ct).ConfigureAwait(false);
         return Ok(data);
+    }
+
+    [HttpGet("settings")]
+    public async Task<ActionResult<FutureMatchesSettingsApiDto>> GetSettings(CancellationToken ct)
+    {
+        var data = await _settings.GetForApiAsync(ct).ConfigureAwait(false);
+        return Ok(data);
+    }
+
+    [HttpPut("settings")]
+    public async Task<ActionResult<FutureMatchesSettingsApiDto>> PutSettings(
+        [FromBody] FutureMatchesUserSettingsFileDto body,
+        CancellationToken ct)
+    {
+        try {
+            var data = await _settings.SaveAsync(body, ct).ConfigureAwait(false);
+            return Ok(data);
+        }
+        catch (ArgumentException ex) {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpGet("media/{fileName}")]

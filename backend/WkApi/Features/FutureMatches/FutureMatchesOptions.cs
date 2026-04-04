@@ -7,6 +7,9 @@ public class FutureMatchesOptions
     /// <summary>Relative to content root (e.g. Data/Cache/future-matches.json).</summary>
     public string CacheFileRelativePath { get; set; } = "Data/Cache/future-matches.json";
 
+    /// <summary>User-editable games/teams (seeded from appsettings on first run).</summary>
+    public string SettingsFileRelativePath { get; set; } = "Data/Cache/future-matches-settings.json";
+
     /// <summary>Delay between Liquipedia requests per game (politeness).</summary>
     public int RequestDelayMs { get; set; } = 750;
 

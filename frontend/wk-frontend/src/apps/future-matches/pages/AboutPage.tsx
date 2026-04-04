@@ -20,14 +20,17 @@ export default function AboutPage() {
       </p>
       <p className="ui-lead">
         There is no database: results are stored in a JSON file on the API
-        server under <code>Data/Cache/</code>. Team logos are downloaded once
+        server under <code>Data/Cache/</code>. Followed games and teams live in{" "}
+        <code>future-matches-settings.json</code> (editable from the{" "}
+        <strong>Follow</strong> tab). Team logos are downloaded once
         and cached as files next to that JSON; the API serves them from{" "}
         <code>/api/future-matches/media/…</code>. With Docker Compose, a named
         volume keeps that folder across container restarts.
       </p>
       <p className="ui-lead">
-        Configure games and team name filters in{" "}
-        <code>appsettings.json</code> under <code>FutureMatches:Games</code>.
+        The first time the API runs, settings are copied from{" "}
+        <code>appsettings.json</code> (<code>FutureMatches:Games</code>) if no
+        settings file exists yet.
       </p>
     </div>
   );
