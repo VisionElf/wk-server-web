@@ -177,7 +177,7 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
                 className="ui-btn ui-btn--primary"
                 onClick={() => void onSaveCustom()}
                 disabled={busy}
-                title="Use this date as the last change time and close."
+                title="Add this date and close."
               >
                 Save
               </button>
@@ -219,9 +219,9 @@ export function ItemEditorModal({ open, mode, item, onClose, onSaved }: Props) {
                 className="ui-btn"
                 onClick={() => setShowCustom(true)}
                 disabled={busy}
-                title="Pick a specific date instead of “now”."
+                title="Add a history entry for a specific date instead of “now”."
               >
-                Set custom date…
+                Add custom date…
               </button>
               {mode === "edit" && hasHistory && (
                 <button

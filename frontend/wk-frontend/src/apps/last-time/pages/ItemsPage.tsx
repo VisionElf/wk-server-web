@@ -76,51 +76,65 @@ export default function ItemsPage() {
 
       {loadError != null && <p className="ui-error">{loadError}</p>}
 
-      <div className="ui-grid-cards">
-        {items.map((item) => (
-          <article
-            key={item.id}
-            className="ui-card ui-card--interactive"
-            role="button"
-            tabIndex={0}
-            onClick={() => openEdit(item)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                openEdit(item);
-              }
-            }}
-          >
-            <h2 className="ui-card__title">{item.name}</h2>
-            <p className="ui-card__line">
-              {formatElapsed(item.lastChangedAtUtc)}
-            </p>
-            {item.lastChangedAtUtc != null && (
-              <>
-                <p className="ui-card__detail">
-                  {formatDateLong(item.lastChangedAtUtc)}
-                </p>
-                {item.historyCount > 0 && (
-                  <p className="ui-card__meta">
-                    {item.historyCount}{" "}
-                    {item.historyCount === 1 ? "entry" : "entries"} in history
-                  </p>
-                )}
-              </>
-            )}
-            <div className="ui-card__footer">
-              <button
-                type="button"
-                className="ui-btn ui-btn--primary"
-                onClick={(e) => void markNow(e, item)}
-                title={`Record a change for ${item.name} now (adds a timestamp).`}
-              >
-                Mark now
-              </button>
-            </div>
-          </article>
-        ))}
-      </div>
+      {items.length === 0 ? (
+        <p className="ui-lead" style={{ marginTop: "1rem" }}>
+          No items yet. Click <strong>Add item</strong> to create one.
+        </p>
+      ) : (
+        <div style={{ overflowX: "auto", marginTop: "0.75rem" }}>
+          <table className="ui-table">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Last changed</th>
+                <th scope="col">Date</th>
+                <th scope="col">History</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr
+                  key={item.id}
+                  tabIndex={0}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => openEdit(item)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openEdit(item);
+                    }
+                  }}
+                >
+                  <td>
+                    <strong>{item.name}</strong>
+                  </td>
+                  <td>{formatElapsed(item.lastChangedAtUtc)}</td>
+                  <td>
+                    {item.lastChangedAtUtc != null ? formatDateLong(item.lastChangedAtUtc) : "—"}
+                  </td>
+                  <td>
+                    {item.historyCount > 0
+                      ? `${item.historyCount} ${item.historyCount === 1 ? "entry" : "entries"}`
+                      : "—"}
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="ui-btn ui-btn--primary"
+                      style={{ whiteSpace: "nowrap" }}
+                      onClick={(e) => void markNow(e, item)}
+                      title={`Record a change for ${item.name} now.`}
+                    >
+                      Mark now
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <ItemEditorModal
         open={modalOpen}
