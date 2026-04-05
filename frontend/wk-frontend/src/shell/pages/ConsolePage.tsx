@@ -45,7 +45,7 @@ export default function ConsolePage() {
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
-  const [compacted, setCompacted] = useState(false);
+  const [compact, setCompact] = useState(true);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollIntentRef = useRef<{
     intent: ScrollIntent;
@@ -91,7 +91,7 @@ export default function ConsolePage() {
         Math.max(0, el.scrollHeight - el.clientHeight),
       );
     }
-  }, [text, compacted]);
+  }, [text, compact]);
 
   useEffect(() => {
     void load();
@@ -100,8 +100,8 @@ export default function ConsolePage() {
   }, [load]);
 
   const displayText = useMemo(
-    () => formatConsoleText(text, compacted),
-    [text, compacted],
+    () => formatConsoleText(text, compact),
+    [text, compact],
   );
 
   return (
@@ -125,7 +125,7 @@ export default function ConsolePage() {
               <input
                 className="ui-switch__input"
                 type="checkbox"
-                checked={compacted}
+                checked={compact}
                 onChange={(e) => {
                   const el = taRef.current;
                   if (el != null) {
@@ -134,12 +134,12 @@ export default function ConsolePage() {
                       scrollTop: el.scrollTop,
                     };
                   }
-                  setCompacted(e.target.checked);
+                  setCompact(e.target.checked);
                 }}
               />
               <span className="ui-switch__slider" aria-hidden />
             </span>
-            <span className="ui-switch__label">Compacted</span>
+            <span className="ui-switch__label">Compact</span>
           </label>
           <label
             className="ui-switch"

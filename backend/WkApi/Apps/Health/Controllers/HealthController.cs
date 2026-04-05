@@ -25,6 +25,34 @@ public class HealthController : ControllerBase
         return Ok(weights);
     }
 
+    /// <summary>Global min/max weight (all time), with the earliest date for each tied value.</summary>
+    [HttpGet("weights/stats")]
+    public async Task<ActionResult<WeightStatsDto?>> GetWeightStats(CancellationToken ct)
+    {
+        if (!await _db.WeightInfos.AnyAsync(ct)) {
+            return Ok(null);
+        }
+
+        var minVal = await _db.WeightInfos.MinAsync(x => x.WeightInKilograms, ct);
+        var maxVal = await _db.WeightInfos.MaxAsync(x => x.WeightInKilograms, ct);
+        var minRow = await _db.WeightInfos
+            .Where(x => x.WeightInKilograms == minVal)
+            .OrderBy(x => x.MeasuredAtUtc)
+            .FirstAsync(ct);
+        var maxRow = await _db.WeightInfos
+            .Where(x => x.WeightInKilograms == maxVal)
+            .OrderBy(x => x.MeasuredAtUtc)
+            .FirstAsync(ct);
+
+        return Ok(new WeightStatsDto(
+            minRow.WeightInKilograms,
+            minRow.MeasuredAtUtc,
+            maxRow.WeightInKilograms,
+            maxRow.MeasuredAtUtc));
+    }
+
+    public record WeightStatsDto(double MinWeightKg, DateTime MinMeasuredAtUtc, double MaxWeightKg, DateTime MaxMeasuredAtUtc);
+
     public record CreateWeightDto(DateTime MeasuredAtUtc, double WeightInKilograms);
 
     [HttpPost("weights")]
@@ -43,6 +71,35 @@ public class HealthController : ControllerBase
         await _db.SaveChangesAsync(ct);
 
         return Created($"/api/health/weights/{weight.Id}", weight);
+    }
+
+    public record ImportWeightsResultDto(int Imported, int Skipped);
+
+    /// <summary>Batch-create weights from CSV import. Invalid rows are skipped; valid rows are inserted in one transaction.</summary>
+    [HttpPost("weights/import")]
+    public async Task<ActionResult<ImportWeightsResultDto>> ImportWeights([FromBody] IReadOnlyList<CreateWeightDto>? items, CancellationToken ct)
+    {
+        if (items == null || items.Count == 0) {
+            return BadRequest("At least one row is required.");
+        }
+
+        var skipped = 0;
+        foreach (var body in items) {
+            if (body.WeightInKilograms <= 0) {
+                skipped++;
+                continue;
+            }
+
+            _db.WeightInfos.Add(new WeightInfo {
+                Id = Guid.NewGuid(),
+                MeasuredAtUtc = body.MeasuredAtUtc.ToUniversalTime(),
+                WeightInKilograms = body.WeightInKilograms,
+            });
+        }
+
+        await _db.SaveChangesAsync(ct);
+        var imported = items.Count - skipped;
+        return Ok(new ImportWeightsResultDto(imported, skipped));
     }
 
     [HttpDelete("weights/{id:guid}")]

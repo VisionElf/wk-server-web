@@ -18,6 +18,10 @@ type DisplayChartProps = {
   xLabel: string;
   yLabel: string;
   height?: number;
+  /** When set, X axis and tooltip show this instead of raw numeric x (e.g. timestamps → date strings). */
+  formatX?: (x: number) => string;
+  /** Fixed Y axis range (e.g. global min/max). Defaults to auto from visible data. */
+  yDomain?: [number, number];
 };
 
 /**
@@ -28,6 +32,8 @@ export function DisplayChart({
   xLabel,
   yLabel,
   height = 300,
+  formatX,
+  yDomain,
 }: DisplayChartProps) {
   const chartData = [...data]
     .map((d) => ({ x: d.x, y: d.y }))
@@ -48,13 +54,18 @@ export function DisplayChart({
           dataKey="x"
           type="number"
           domain={["dataMin", "dataMax"]}
+          tickFormatter={formatX != null ? formatX : undefined}
           label={{ value: xLabel, position: "insideBottom", offset: -12 }}
         />
         <YAxis
-          domain={["auto", "auto"]}
+          domain={yDomain != null ? yDomain : (["auto", "auto"] as const)}
           label={{ value: yLabel, angle: -90, position: "insideLeft" }}
         />
-        <Tooltip labelFormatter={(x) => `${xLabel}: ${x}`} />
+        <Tooltip
+          labelFormatter={(x) =>
+            `${xLabel}: ${formatX != null ? formatX(Number(x)) : String(x)}`
+          }
+        />
         <Line
           name={yLabel}
           type="monotone"
