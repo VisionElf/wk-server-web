@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WkApi.Data;
+using WkApi.Core.Data;
 using WkApi.Apps.LastTime.Entities;
 
 namespace WkApi.Apps.LastTime.Controllers;

@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { fetchServerLogs } from "../../core/serverLogsApi";
+import { fetchServerLogs } from "@/core/serverLogsApi";
 import "../shell.css";
 
 const pollMs = 1200;

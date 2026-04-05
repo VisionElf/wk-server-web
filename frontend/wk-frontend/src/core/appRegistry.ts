@@ -1,14 +1,14 @@
-import { futureMatchesSubApp } from "../apps/future-matches/subApp";
-import { lastTimeSubApp } from "../apps/last-time/subApp";
-import { esportSubApp } from "../apps/esport/subApp";
+import { futureMatchesSubApp } from "@/apps/future-matches/subApp";
+import { lastTimeSubApp } from "@/apps/last-time/subApp";
+import { healthSubApp } from "@/apps/health/subApp";
 
-import type { SubAppDefinition, SubAppRegistration } from "./subAppTypes";
+import type { SubAppDefinition, SubAppRegistration } from "@/core/subAppTypes";
 
 /**
  * Ordered list of sub-apps (sidebar + router). Add or remove entries here only.
  */
 export const subAppRegistrations: SubAppRegistration[] = [
-  esportSubApp,
+  healthSubApp,
   lastTimeSubApp,
   futureMatchesSubApp,
 ];

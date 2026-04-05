@@ -1,4 +1,4 @@
-import type { SubAppDefinition } from "../../core/subAppTypes";
+import type { SubAppDefinition } from "@/core/subAppTypes";
 
 export const futureMatchesApp: SubAppDefinition = {
   id: "future-matches",

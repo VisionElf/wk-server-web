@@ -6,7 +6,7 @@ import {
   refetchFutureMatchesPageCache,
   type FutureMatchesImageCacheEntry,
   type FutureMatchesPageCacheEntry,
-} from "../api/client";
+} from "@/apps/future-matches/api/client";
 
 type CacheTab = "html" | "img";
 

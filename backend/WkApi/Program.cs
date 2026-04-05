@@ -8,10 +8,6 @@ using WkApi.Infrastructure.Files;
 using WkApi.Infrastructure.Logging;
 using WkApi.Infrastructure.Security;
 
-// PostgreSQL: set ConnectionStrings:DefaultConnection via environment variables or
-// dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=wkdb;Username=...;Password=..."
-// (do not commit real credentials; appsettings.Development.json no longer stores them).
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<FormOptions>(options => {

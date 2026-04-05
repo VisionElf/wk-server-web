@@ -2,7 +2,7 @@ import { type CSSProperties } from "react";
 import type {
   FutureMatchGameVisual,
   FutureMatchItem,
-} from "../../api/client";
+} from "@/apps/future-matches/api/client";
 import { formatWhen, itemKind } from "./upcomingMatchBuckets";
 import { useIntervalTick } from "./useIntervalTick";
 

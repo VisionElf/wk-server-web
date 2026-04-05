@@ -1,4 +1,4 @@
-import { apiHeaders } from "./apiHeaders";
+import { apiHeaders } from "@/core/apiHeaders";
 
 const base = "/api/server-logs";
 

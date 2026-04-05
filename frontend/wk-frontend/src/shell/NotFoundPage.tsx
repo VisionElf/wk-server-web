@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { defaultLandingPath } from "../core/appRegistry";
+import { defaultLandingPath } from "@/core/appRegistry";
 
 export default function NotFoundPage() {
   return (

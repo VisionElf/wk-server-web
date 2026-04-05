@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { addLtiEvent, fetchLtiItems, type LtiItem } from "../api/client";
-import { ItemEditorModal } from "../components/ItemEditorModal";
-import { formatDateLong, formatElapsed } from "../utils/formatElapsed";
+import { addLtiEvent, fetchLtiItems, type LtiItem } from "@/apps/last-time/api/client";
+import { ItemEditorModal } from "@/apps/last-time/components/ItemEditorModal";
+import { formatDateLong, formatElapsed } from "@/apps/last-time/utils/formatElapsed";
 
 export default function ItemsPage() {
   const [items, setItems] = useState<LtiItem[]>([]);

@@ -1,4 +1,4 @@
-import type { SubAppDefinition } from "../../core/subAppTypes";
+import type { SubAppDefinition } from "@/core/subAppTypes";
 
 /** Replace all SAMPLE_* values when copying this folder. */
 export const sampleApp: SubAppDefinition = {

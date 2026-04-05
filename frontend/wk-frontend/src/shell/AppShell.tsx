@@ -1,6 +1,6 @@
 import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { documentTitleForPath } from "../core/documentTitle";
+import { documentTitleForPath } from "@/core/documentTitle";
 import { AppSubNav } from "./AppSubNav";
 import { Sidebar } from "./Sidebar";
 import "./shell.css";

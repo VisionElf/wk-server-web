@@ -1,4 +1,4 @@
-import type { SubAppDefinition } from "./subAppTypes";
+import type { SubAppDefinition } from "@/core/subAppTypes";
 
 /**
  * Resolves which app owns the current path. Longest prefix wins so nested paths stay unambiguous.

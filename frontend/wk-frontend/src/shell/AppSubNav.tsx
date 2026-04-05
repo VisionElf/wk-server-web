@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { subApps } from "../core/appRegistry";
-import { getActiveSubApp } from "../core/activeSubApp";
+import { subApps } from "@/core/appRegistry";
+import { getActiveSubApp } from "@/core/activeSubApp";
 
 export function AppSubNav() {
   const { pathname } = useLocation();

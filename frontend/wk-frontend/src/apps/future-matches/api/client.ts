@@ -1,4 +1,4 @@
-import { apiHeaders } from "../../../core/apiHeaders";
+import { apiHeaders } from "@/core/apiHeaders";
 
 const base = "/api/future-matches";
 

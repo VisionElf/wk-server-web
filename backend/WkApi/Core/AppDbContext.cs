@@ -2,7 +2,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using WkApi.Apps.LastTime.Entities;
 
-namespace WkApi.Data;
+namespace WkApi.Core.Data;
 
 /// <summary>
 /// Single EF Core database session for this API (PostgreSQL). Not a plugin: it maps C# entities to tables

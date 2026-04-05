@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { subApps } from "../core/appRegistry";
-import { APP_VERSION_LABEL } from "../core/appVersion";
+import { subApps } from "@/core/appRegistry";
+import { APP_VERSION_LABEL } from "@/core/appVersion";
 
 export function Sidebar() {
   return (

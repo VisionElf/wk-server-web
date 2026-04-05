@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchLtiHistory, type LtiHistoryEntry } from "../api/client";
+import { fetchLtiHistory, type LtiHistoryEntry } from "@/apps/last-time/api/client";
 
 export default function HistoryPage() {
   const [rows, setRows] = useState<LtiHistoryEntry[]>([]);

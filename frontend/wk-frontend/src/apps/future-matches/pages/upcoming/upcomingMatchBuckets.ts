@@ -1,4 +1,4 @@
-import type { FutureMatchItem } from "../../api/client";
+import type { FutureMatchItem } from "@/apps/future-matches/api/client";
 
 export type Bucket = "finished" | "today" | "week" | "later" | "too_old";
 

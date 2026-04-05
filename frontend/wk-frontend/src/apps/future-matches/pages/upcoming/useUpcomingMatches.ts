@@ -5,7 +5,7 @@ import {
   refreshFutureMatches,
   type FutureMatchGameVisual,
   type FutureMatchesPayload,
-} from "../../api/client";
+} from "@/apps/future-matches/api/client";
 import { splitMatchesByBucket } from "./upcomingMatchBuckets";
 import { useIntervalTick } from "./useIntervalTick";
 

@@ -1,4 +1,4 @@
-import { subApps } from "./appRegistry";
+import { subApps } from "@/core/appRegistry";
 
 const BASE_TITLE = "wk-server-web";
 

@@ -5,7 +5,7 @@ import {
   createLtiItem,
   deleteLtiItem,
   type LtiItem,
-} from "../api/client";
+} from "@/apps/last-time/api/client";
 
 type Mode = "add" | "edit";
 
