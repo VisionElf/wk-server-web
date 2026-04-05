@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WkApi.Apps.LastTime.Entities;
-using WkApi.Data;
+using WkApi.Core.Data;
 
 namespace WkApi.Apps.LastTime;
 

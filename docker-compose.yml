@@ -3,6 +3,7 @@ services:
     build:
       context: ./backend/WkApi
     container_name: wk-api
+    restart: unless-stopped
     depends_on:
       - db
     expose:

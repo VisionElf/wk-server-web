@@ -39,6 +39,32 @@ New apps are registered in `src/core/appRegistry.ts` and `src/router.tsx` (see c
 
 **Data on disk:** Future Matches uses JSON and HTML/image caches under configurable paths (see `appsettings.json` → `FutureMatches`).
 
+### Database and EF Core migrations
+
+The API uses **one** `AppDbContext` (`Core/AppDbContext.cs`) and **EF Core migrations** to evolve the PostgreSQL schema over time.
+
+**What a migration is:** a versioned C# description of schema changes (tables, columns, indexes). EF compares your entity model to the previous snapshot, generates `Up`/`Down` methods, and updates `Core/Migrations/AppDbContextModelSnapshot.cs` so the next migration can diff against it. At runtime, `Program.cs` calls `Database.MigrateAsync()` on startup (unless disabled via `WkApi:RunMigrationsAtStartup`), which applies any pending migrations to the database and records them in the `__EFMigrationsHistory` table.
+
+**Why it matters:** if you add a `DbSet<T>` and use it in queries but never add a migration, the table may not exist and the API will fail at runtime. The Docker image must **include** the latest migration files and be rebuilt after you add them.
+
+#### Adding a new table (workflow)
+
+1. **Define the entity** — e.g. `Apps/<YourApp>/Entities/MyEntity.cs`.
+2. **Register it in EF** — add `DbSet<MyEntity>` on `AppDbContext`, and optionally add a `IEntityTypeConfiguration<MyEntity>` under that app and call `ApplyConfigurationsFromAssembly` (already used in `OnModelCreating`).
+3. **Create a migration** — from `backend/WkApi` (with the [.NET EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) installed, e.g. `dotnet tool install --global dotnet-ef`):
+
+   ```bash
+   cd backend/WkApi
+   dotnet ef migrations add AddMyEntity --output-dir Apps/<YourApp>/Migrations
+   ```
+
+   Use `--output-dir` to keep migrations next to the app that owns the feature (same pattern as `Apps/LastTime/Migrations` and `Apps/Health/Migrations`). You can omit `--output-dir` if you prefer a single migrations folder.
+
+4. **Review** the generated `*MigrationName*.cs` and the updated `AppDbContextModelSnapshot.cs` (table names, columns, indexes).
+5. **Apply the schema** — restart the API (or run `dotnet ef database update` against your dev database). With Docker, rebuild and recreate the API container so it runs the new migration on startup.
+
+6. **Commit** all new/changed migration files and the snapshot together; do not edit the snapshot by hand except in rare merge situations (prefer `dotnet ef migrations remove` to undo the last migration while iterating).
+
 ## Prerequisites
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download)

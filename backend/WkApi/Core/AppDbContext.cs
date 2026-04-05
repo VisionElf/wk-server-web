@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using WkApi.Apps.LastTime.Entities;
+using WkApi.Apps.Health.Entities;
 
 namespace WkApi.Core.Data;
 
@@ -18,6 +19,8 @@ public class AppDbContext : DbContext
 
     public DbSet<LtiItem> LtiItems => Set<LtiItem>();
     public DbSet<LtiItemEvent> LtiItemEvents => Set<LtiItemEvent>();
+
+    public DbSet<WeightInfo> WeightInfos => Set<WeightInfo>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
