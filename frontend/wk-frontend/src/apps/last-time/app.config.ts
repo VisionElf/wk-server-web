@@ -5,7 +5,7 @@ export const lastTimeApp: SubAppDefinition = {
   title: "Last time",
   pathPrefix: "/last-time",
   subNav: [
-    { segment: "items", label: "Items" },
-    { segment: "history", label: "History" },
+    { id: "items", label: "Items" },
+    { id: "history", label: "History" },
   ],
 };

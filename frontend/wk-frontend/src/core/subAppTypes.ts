@@ -2,7 +2,7 @@ import type { RouteObject } from "react-router-dom";
 
 /** One tab / section inside a sub-app (top navigation). */
 export type SubAppNavItem = {
-  segment: string;
+  id: string;
   label: string;
 };
 

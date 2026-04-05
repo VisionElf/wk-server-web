@@ -89,9 +89,10 @@ export default function PageCachePage() {
         <div className="ui-page-header__intro">
           <h1>Page cache</h1>
           <p className="ui-lead">
-            Liquipedia HTML pages (TTL from settings) and cached images served
-            under <code>/api/future-matches/media/…</code>. Use Refetch to pull a
-            fresh copy immediately.
+            Liquipedia HTML pages (TTL from settings; Main_Page uses a longer
+            TTL) and cached images under{" "}
+            <code>/api/future-matches/media/…</code>. Refetch pulls a fresh HTML
+            copy from Liquipedia.
           </p>
         </div>
         <div className="ui-page-actions">
@@ -143,7 +144,8 @@ export default function PageCachePage() {
                 <thead>
                   <tr>
                     <th>URL</th>
-                    <th>Fetched (UTC)</th>
+                    <th>Fetched from wiki (UTC)</th>
+                    <th>Last used (UTC)</th>
                     <th>Expires after</th>
                     <th style={{ width: "7rem" }}> </th>
                   </tr>
@@ -157,6 +159,9 @@ export default function PageCachePage() {
                         </a>
                       </td>
                       <td>{formatUtc(r.fetchedAtUtc)}</td>
+                      <td>
+                        {formatUtc(r.lastServedAtUtc ?? r.fetchedAtUtc)}
+                      </td>
                       <td>{formatUtc(r.expiresAtUtc)}</td>
                       <td>
                         <button

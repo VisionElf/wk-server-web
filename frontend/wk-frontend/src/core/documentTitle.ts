@@ -25,7 +25,7 @@ export function documentTitleForPath(pathname: string): string {
     }
 
     const segment = rest.split("/")[0] ?? "";
-    const nav = app.subNav.find((s) => s.segment === segment);
+    const nav = app.subNav.find((s) => s.id === segment);
     if (nav) {
       return `${nav.label} · ${app.title} · ${BASE_TITLE}`;
     }

@@ -63,7 +63,10 @@ export async function refreshFutureMatches(): Promise<FutureMatchesPayload> {
 
 export type FutureMatchesPageCacheEntry = {
   url: string;
+  /** Last download from Liquipedia. */
   fetchedAtUtc: string;
+  /** Last time this HTML was served (updates on every refresh, including cache hits). */
+  lastServedAtUtc?: string;
   expiresAtUtc: string;
 };
 

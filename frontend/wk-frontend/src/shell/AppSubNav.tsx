@@ -13,10 +13,10 @@ export function AppSubNav() {
   return (
     <header className="app-subnav" role="navigation" aria-label="Section">
       {active.subNav.map((item) => {
-        const to = `${active.pathPrefix}/${item.segment}`;
+        const to = `${active.pathPrefix}/${item.id}`;
         return (
           <NavLink
-            key={item.segment}
+            key={item.id}
             to={to}
             end
             className={({ isActive }) =>

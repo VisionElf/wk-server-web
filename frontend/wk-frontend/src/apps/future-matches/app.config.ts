@@ -5,9 +5,9 @@ export const futureMatchesApp: SubAppDefinition = {
   title: "Matches",
   pathPrefix: "/future-matches",
   subNav: [
-    { segment: "upcoming", label: "Upcoming" },
-    { segment: "settings", label: "Follow" },
-    { segment: "page-cache", label: "Page cache" },
-    { segment: "about", label: "About" },
+    { id: "upcoming", label: "Upcoming" },
+    { id: "settings", label: "Follow" },
+    { id: "page-cache", label: "Page cache" },
+    { id: "about", label: "About" },
   ],
 };

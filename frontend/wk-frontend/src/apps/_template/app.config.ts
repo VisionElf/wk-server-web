@@ -6,7 +6,7 @@ export const sampleApp: SubAppDefinition = {
   title: "Sample app",
   pathPrefix: "/sample-app",
   subNav: [
-    { segment: "home", label: "Home" },
-    { segment: "extra", label: "Extra" },
+    { id: "home", label: "Home" },
+    { id: "extra", label: "Extra" },
   ],
 };

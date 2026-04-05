@@ -44,7 +44,14 @@ public class FutureMatchTournamentDto
     public string? Href { get; set; }
 }
 
-public record FutureMatchesPageCacheEntryDto(string Url, DateTime FetchedAtUtc, DateTime ExpiresAtUtc);
+/// <param name="FetchedAtUtc">Last time HTML was downloaded from Liquipedia.</param>
+/// <param name="LastServedAtUtc">Last time this entry was read (including cache hits on refresh).</param>
+/// <param name="ExpiresAtUtc">FetchedAtUtc + TTL for this URL (Main_Page uses a longer TTL).</param>
+public record FutureMatchesPageCacheEntryDto(
+    string Url,
+    DateTime FetchedAtUtc,
+    DateTime LastServedAtUtc,
+    DateTime ExpiresAtUtc);
 
 /// <summary>On-disk image cache row; SourceUrl is null for files cached before metadata was added.</summary>
 public record FutureMatchesImageCacheEntryDto(

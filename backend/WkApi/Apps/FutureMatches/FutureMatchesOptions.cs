@@ -18,6 +18,11 @@ public class FutureMatchesOptions
     /// <summary>How long cached Liquipedia HTML is reused before refetching.</summary>
     public double HtmlPageCacheTtlHours { get; set; } = 24;
 
+    /// <summary>
+    /// TTL for Liquipedia Main_Page HTML only (logo/banner source). Much longer than hub/team pages.
+    /// </summary>
+    public double HtmlPageCacheMainPageTtlHours { get; set; } = 4320;
+
     /// <summary>Delay between Liquipedia page fetches (politeness).</summary>
     public int RequestDelayMs { get; set; } = 2000;
 

@@ -6,7 +6,7 @@ import type {
 import { formatWhen, itemKind } from "./upcomingMatchBuckets";
 import { useIntervalTick } from "./useIntervalTick";
 
-export type CountdownMode = "today" | "week" | "later";
+export type CountdownMode = "finished" | "today" | "week" | "later";
 
 const MS_DAY = 86_400_000;
 const MS_HOUR = 3_600_000;
@@ -67,7 +67,9 @@ function WhenLiveLine({
   const deltaMs = targetMs - nowMs;
 
   let text: string;
-  if (mode === "today") {
+  if (mode === "finished") {
+    text = "Finished";
+  } else if (mode === "today") {
     text = formatLiveToday(deltaMs);
   } else if (mode === "week") {
     text = formatLiveWeek(deltaMs);
@@ -199,14 +201,14 @@ export function MatchTableSection({
   countdownMode: CountdownMode | "none";
   visualByGame: Map<string, FutureMatchGameVisual>;
 }) {
+  if (rows.length === 0) {
+    return null;
+  }
   return (
     <section className="fm-match-section" aria-labelledby={`fm-section-${title.replace(/\s/g, "-")}`}>
       <h2 className="fm-match-section-title" id={`fm-section-${title.replace(/\s/g, "-")}`}>
         {title}
       </h2>
-      {rows.length === 0 ? (
-        <p className="ui-lead fm-match-section-empty">No entries.</p>
-      ) : (
         <div className="fm-table-wrap">
           <table className="ui-table fm-table">
             <thead>
@@ -260,7 +262,6 @@ export function MatchTableSection({
             </tbody>
           </table>
         </div>
-      )}
     </section>
   );
 }

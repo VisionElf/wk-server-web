@@ -98,6 +98,12 @@ export default function UpcomingPage() {
       ) : (
         <>
           <MatchTableSection
+            title="Finished"
+            rows={buckets.finished}
+            countdownMode="finished"
+            visualByGame={visualByGame}
+          />
+          <MatchTableSection
             title="Today"
             rows={buckets.today}
             countdownMode="today"

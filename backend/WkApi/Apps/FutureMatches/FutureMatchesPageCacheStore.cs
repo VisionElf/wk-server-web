@@ -44,7 +44,7 @@ public class FutureMatchesPageCacheStore
         var key = HashUrl(normalized);
         var htmlPath = Path.Combine(CacheDirectory, key + ".html");
         var metaPath = Path.Combine(CacheDirectory, key + ".meta.json");
-        var ttl = TimeSpan.FromHours(Math.Max(0.25, _options.Value.HtmlPageCacheTtlHours));
+        var ttl = TtlForUrl(normalized);
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try {
@@ -56,10 +56,12 @@ public class FutureMatchesPageCacheStore
                     var meta = await JsonSerializer.DeserializeAsync<PageCacheMeta>(metaStream, JsonOptions, ct)
                         .ConfigureAwait(false);
                     if (meta?.FetchedAtUtc != null) {
-                        var age = DateTime.UtcNow - meta.FetchedAtUtc;
+                        var fetched = NormalizeUtc(meta.FetchedAtUtc);
+                        var age = DateTime.UtcNow - fetched;
                         if (age < ttl) {
                             _logger.LogDebug("Liquipedia page cache hit ({Age} old): {Url}", age, normalized);
                             var cached = await File.ReadAllTextAsync(htmlPath, ct).ConfigureAwait(false);
+                            await TouchLastServedAsync(metaPath, meta, normalized, ct).ConfigureAwait(false);
                             return (cached, false);
                         }
 
@@ -86,7 +88,12 @@ public class FutureMatchesPageCacheStore
 
             Directory.CreateDirectory(CacheDirectory);
             await File.WriteAllTextAsync(htmlPath, html, ct).ConfigureAwait(false);
-            var metaOut = new PageCacheMeta(normalized, DateTime.UtcNow);
+            var now = DateTime.UtcNow;
+            var metaOut = new PageCacheMeta {
+                Url = normalized,
+                FetchedAtUtc = now,
+                LastServedAtUtc = now,
+            };
             await File.WriteAllTextAsync(
                     metaPath,
                     JsonSerializer.Serialize(metaOut, JsonOptions),
@@ -120,7 +127,6 @@ public class FutureMatchesPageCacheStore
     /// <summary>Lists on-disk HTML cache entries (URL + fetch time + expiry from current TTL).</summary>
     public IReadOnlyList<FutureMatchesPageCacheEntryDto> ListCachedEntries()
     {
-        var ttl = TimeSpan.FromHours(Math.Max(0.25, _options.Value.HtmlPageCacheTtlHours));
         var list = new List<FutureMatchesPageCacheEntryDto>();
         if (!Directory.Exists(CacheDirectory)) {
             return list;
@@ -134,10 +140,12 @@ public class FutureMatchesPageCacheStore
                     continue;
                 }
 
-                var fetched = meta.FetchedAtUtc.Kind == DateTimeKind.Unspecified
-                    ? DateTime.SpecifyKind(meta.FetchedAtUtc, DateTimeKind.Utc)
-                    : meta.FetchedAtUtc.ToUniversalTime();
-                list.Add(new FutureMatchesPageCacheEntryDto(meta.Url, fetched, fetched + ttl));
+                var fetched = NormalizeUtc(meta.FetchedAtUtc);
+                var lastServed = meta.LastServedAtUtc.HasValue
+                    ? NormalizeUtc(meta.LastServedAtUtc.Value)
+                    : fetched;
+                var ttl = TtlForUrl(meta.Url);
+                list.Add(new FutureMatchesPageCacheEntryDto(meta.Url, fetched, lastServed, fetched + ttl));
             }
             catch (Exception ex) {
                 _logger.LogDebug(ex, "Skip unreadable page cache meta: {Path}", metaPath);
@@ -147,5 +155,49 @@ public class FutureMatchesPageCacheStore
         return list.OrderBy(x => x.Url, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
-    private sealed record PageCacheMeta(string Url, DateTime FetchedAtUtc);
+    private TimeSpan TtlForUrl(string normalizedUrl)
+    {
+        if (IsMainPageUrl(normalizedUrl)) {
+            return TimeSpan.FromHours(Math.Max(0.25, _options.Value.HtmlPageCacheMainPageTtlHours));
+        }
+
+        return TimeSpan.FromHours(Math.Max(0.25, _options.Value.HtmlPageCacheTtlHours));
+    }
+
+    private static bool IsMainPageUrl(string normalizedUrl)
+    {
+        if (!Uri.TryCreate(normalizedUrl.Trim(), UriKind.Absolute, out var u)) {
+            return false;
+        }
+
+        var path = u.AbsolutePath.TrimEnd('/');
+        var i = path.LastIndexOf('/');
+        var last = i >= 0 ? path[(i + 1)..] : path;
+        return string.Equals(last, "Main_Page", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static DateTime NormalizeUtc(DateTime dt) =>
+        dt.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
+            : dt.ToUniversalTime();
+
+    private async Task TouchLastServedAsync(
+        string metaPath,
+        PageCacheMeta meta,
+        string normalizedUrl,
+        CancellationToken ct)
+    {
+        var now = DateTime.UtcNow;
+        meta.Url = normalizedUrl;
+        meta.LastServedAtUtc = now;
+        await File.WriteAllTextAsync(metaPath, JsonSerializer.Serialize(meta, JsonOptions), ct)
+            .ConfigureAwait(false);
+    }
+
+    private sealed class PageCacheMeta
+    {
+        public string Url { get; set; } = "";
+        public DateTime FetchedAtUtc { get; set; }
+        public DateTime? LastServedAtUtc { get; set; }
+    }
 }
