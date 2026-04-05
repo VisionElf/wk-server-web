@@ -23,6 +23,8 @@ export type WeightStats = {
   minMeasuredAtUtc: string;
   maxWeightKg: number;
   maxMeasuredAtUtc: string;
+  latestWeightKg: number;
+  latestMeasuredAtUtc: string;
 };
 
 /** Min/max over all stored weights (for chart Y scale and summary). */

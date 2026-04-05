@@ -43,15 +43,26 @@ public class HealthController : ControllerBase
             .Where(x => x.WeightInKilograms == maxVal)
             .OrderBy(x => x.MeasuredAtUtc)
             .FirstAsync(ct);
+        var latest = await _db.WeightInfos
+            .OrderByDescending(x => x.MeasuredAtUtc)
+            .FirstAsync(ct);
 
         return Ok(new WeightStatsDto(
             minRow.WeightInKilograms,
             minRow.MeasuredAtUtc,
             maxRow.WeightInKilograms,
-            maxRow.MeasuredAtUtc));
+            maxRow.MeasuredAtUtc,
+            latest.WeightInKilograms,
+            latest.MeasuredAtUtc));
     }
 
-    public record WeightStatsDto(double MinWeightKg, DateTime MinMeasuredAtUtc, double MaxWeightKg, DateTime MaxMeasuredAtUtc);
+    public record WeightStatsDto(
+        double MinWeightKg,
+        DateTime MinMeasuredAtUtc,
+        double MaxWeightKg,
+        DateTime MaxMeasuredAtUtc,
+        double LatestWeightKg,
+        DateTime LatestMeasuredAtUtc);
 
     public record CreateWeightDto(DateTime MeasuredAtUtc, double WeightInKilograms);
 

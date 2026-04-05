@@ -16,6 +16,13 @@ export function addDays(d: Date, n: number): Date {
   return x;
 }
 
+/** Local calendar day at 23:59:59.999 (inclusive end for same-day ranges). */
+export function endOfDay(d: Date): Date {
+  const x = new Date(d.getTime());
+  x.setHours(23, 59, 59, 999);
+  return x;
+}
+
 const ENGLISH_MONTH_BY_PREFIX: Record<string, number> = {
   jan: 0,
   feb: 1,
