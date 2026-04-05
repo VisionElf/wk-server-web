@@ -18,6 +18,10 @@ export default defineConfig({
     },
   },
   server: {
+    // Avoid stale index.html when testing navigation / bookmarks (mirrors prod nginx).
+    headers: {
+      "Cache-Control": "no-cache",
+    },
     // Avoid HMR WebSocket / origin mismatches (localhost vs 127.0.0.1 vs LAN IP).
     host: true,
     port: 5173,
