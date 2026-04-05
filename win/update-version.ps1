@@ -1,22 +1,18 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Met à jour la version affichée (appVersion.ts) et celle de package.json.
+  Updates the displayed version (appVersion.ts) and frontend package.json.
 .PARAMETER Version
-  Nouvelle version (ex. 0.2.0). Obligatoire.
+  New version (e.g. 0.2.0). Optional: if omitted, the script prints current versions and prompts.
 .EXAMPLE
   .\update-version.ps1 0.2.0
+.EXAMPLE
+  .\update-version.ps1
 #>
 param(
-    [Parameter(Mandatory = $true, Position = 0)]
+    [Parameter(Position = 0)]
     [string] $Version
 )
-
-$Version = $Version.Trim()
-if ($Version -eq '') {
-    Write-Host "Usage: .\update-version.ps1 <version>   (ex. 0.2.0)" -ForegroundColor Yellow
-    exit 1
-}
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
@@ -24,11 +20,11 @@ $appVersionPath = Join-Path $root 'frontend\wk-frontend\src\core\appVersion.ts'
 $packageJsonPath = Join-Path $root 'frontend\wk-frontend\package.json'
 
 if (-not (Test-Path $appVersionPath)) {
-    Write-Error "Fichier introuvable: $appVersionPath"
+    Write-Error "File not found: $appVersionPath"
     exit 1
 }
 if (-not (Test-Path $packageJsonPath)) {
-    Write-Error "Fichier introuvable: $packageJsonPath"
+    Write-Error "File not found: $packageJsonPath"
     exit 1
 }
 
@@ -46,24 +42,38 @@ if ($pkgRaw -match '"version"\s*:\s*"([^"]*)"') {
 }
 
 Write-Host ""
-Write-Host "  Version actuelle (sidebar / appVersion.ts) : " -NoNewline
-Write-Host $(if ($null -ne $currentUi) { $currentUi } else { '(non lue)' }) -ForegroundColor Cyan
-Write-Host "  Version actuelle (package.json)           : " -NoNewline
-Write-Host $(if ($null -ne $currentPkg) { $currentPkg } else { '(non lue)' }) -ForegroundColor Cyan
-Write-Host "  Nouvelle version                          : " -NoNewline
+Write-Host "  Current (sidebar / appVersion.ts) : " -NoNewline
+Write-Host $(if ($null -ne $currentUi) { $currentUi } else { '(unread)' }) -ForegroundColor Cyan
+Write-Host "  Current (package.json)              : " -NoNewline
+Write-Host $(if ($null -ne $currentPkg) { $currentPkg } else { '(unread)' }) -ForegroundColor Cyan
+
+if ($null -ne $Version -and $Version.Trim() -ne '') {
+    $Version = $Version.Trim()
+} else {
+    Write-Host ""
+    $Version = Read-Host "  New version (e.g. 0.2.0)"
+    $Version = $Version.Trim()
+    if ($Version -eq '') {
+        Write-Host "Cancelled (no version)." -ForegroundColor Yellow
+        exit 1
+    }
+}
+
+Write-Host ""
+Write-Host "  New version                         : " -NoNewline
 Write-Host $Version -ForegroundColor Yellow
 Write-Host ""
-Write-Host '  Appuyez sur Entree pour appliquer, ou Ctrl+C pour annuler.' -ForegroundColor DarkGray
+Write-Host '  Press Enter to apply, or Ctrl+C to cancel.' -ForegroundColor DarkGray
 $null = Read-Host
 
 $newApp = $appRaw -replace '(APP_VERSION_LABEL\s*=\s*")[^"]*(")', "`${1}$Version`$2"
 $newPkg = $pkgRaw -replace '("version"\s*:\s*")[^"]*(")', "`${1}$Version`$2"
 
 if ($newApp -eq $appRaw) {
-    Write-Warning "Aucun remplacement dans appVersion.ts (motif inchangé ?)."
+    Write-Warning "No replacement in appVersion.ts (pattern unchanged?)."
 }
 if ($newPkg -eq $pkgRaw) {
-    Write-Warning "Aucun remplacement dans package.json (motif inchangé ?)."
+    Write-Warning "No replacement in package.json (pattern unchanged?)."
 }
 
 function Write-Utf8NoBom {
@@ -80,6 +90,6 @@ Write-Utf8NoBom -Path $appVersionPath -Text $newApp
 Write-Utf8NoBom -Path $packageJsonPath -Text $newPkg
 
 Write-Host ""
-Write-Host '  OK - version mise a jour vers ' -NoNewline -ForegroundColor Green
+Write-Host '  OK — version set to ' -NoNewline -ForegroundColor Green
 Write-Host $Version -ForegroundColor Green
 Write-Host ""
