@@ -26,6 +26,15 @@ const eventThemes: Record<string, EventTheme> = {
     },
     "party": {
         color: "#aa0000",
+    },
+    "chore": {
+        color: "#005599",
+    },
+    "appointment": {
+        color: "#006600",
+    },
+    "movie": {
+        color: "#995500",
     }
 };
 
@@ -60,16 +69,32 @@ export function getDaylogEvents(): EventInput[] {
             eventType: "sleep-start"
         },
         {
-            title: "Workout",
+            title: "Workout (2.5km)",
             start: "2026-04-07T15:00:00",
             end: "2026-04-07T17:00:00",
             eventType: "workout"
         },
         {
-            title: "Party",
+            title: "Evening",
             start: "2026-04-07T20:00:00",
             end: "2026-04-08T02:00:00",
             eventType: "party"
+        },
+        {
+            title: "Laundry",
+            start: "2026-04-12T21:00:00",
+            eventType: "chore"
+        },
+        {
+            title: "Doctor",
+            start: "2026-04-10T10:00:00",
+            eventType: "appointment"
+        },
+        {
+            title: "The Matrix",
+            start: "2026-04-08T20:00:00",
+            end: "2026-04-08T22:00:00",
+            eventType: "movie"
         }
     ];
 
