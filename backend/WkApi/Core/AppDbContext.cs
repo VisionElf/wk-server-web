@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using WkApi.Apps.LastTime.Entities;
 using WkApi.Apps.Health.Entities;
+using WkApi.Apps.Daylog.Entities;
 
 namespace WkApi.Core.Data;
 
@@ -21,6 +22,8 @@ public class AppDbContext : DbContext
     public DbSet<LtiItemEvent> LtiItemEvents => Set<LtiItemEvent>();
 
     public DbSet<WeightInfo> WeightInfos => Set<WeightInfo>();
+
+    public DbSet<DaylogEvent> DaylogEvents => Set<DaylogEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
