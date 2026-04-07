@@ -3,6 +3,13 @@ import { addLtiEvent, fetchLtiItems, type LtiItem } from "@/apps/last-time/api/c
 import { ItemEditorModal } from "@/apps/last-time/components/ItemEditorModal";
 import { formatDateLong, formatElapsed } from "@/apps/last-time/utils/formatElapsed";
 
+function sortByLastChanged(a: LtiItem, b: LtiItem): number {
+  if (a.lastChangedAtUtc == null && b.lastChangedAtUtc == null) {
+    return 0;
+  }
+  return (new Date(b.lastChangedAtUtc!).getTime() - new Date(a.lastChangedAtUtc!).getTime());
+}
+
 export default function ItemsPage() {
   const [items, setItems] = useState<LtiItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +100,7 @@ export default function ItemsPage() {
               </tr>
             </thead>
             <tbody>
-              {items.map((item) => (
+              {items.sort(sortByLastChanged).map((item) => (
                 <tr
                   key={item.id}
                   tabIndex={0}
