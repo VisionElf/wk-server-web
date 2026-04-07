@@ -2,7 +2,7 @@ import type { SubAppDefinition } from "@/core/subAppTypes";
 
 export const futureMatchesApp: SubAppDefinition = {
   id: "future-matches",
-  title: "Matches",
+  title: "Esports",
   pathPrefix: "/future-matches",
   subNav: [
     { id: "upcoming", label: "Upcoming" },

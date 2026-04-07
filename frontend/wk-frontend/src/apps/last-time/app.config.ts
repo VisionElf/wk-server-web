@@ -2,7 +2,7 @@ import type { SubAppDefinition } from "@/core/subAppTypes";
 
 export const lastTimeApp: SubAppDefinition = {
   id: "last-time",
-  title: "Last time",
+  title: "Chores",
   pathPrefix: "/last-time",
   subNav: [
     { id: "items", label: "Items" },

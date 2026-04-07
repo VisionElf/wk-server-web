@@ -64,10 +64,7 @@ export default function ItemsPage() {
     <div className="app-page ui-page--constrained">
       <div className="ui-page-header">
         <div className="ui-page-header__intro">
-          <h1>Last time I changed</h1>
-          <p className="ui-lead">
-            Track linens, sponges, and anything you replace on a schedule.
-          </p>
+          <h1>Chores</h1>
         </div>
         <div className="ui-page-actions">
           <button
