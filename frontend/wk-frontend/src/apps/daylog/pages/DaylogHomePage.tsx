@@ -3,12 +3,16 @@ import type { DateClickArg } from "@fullcalendar/interaction";
 import { useCallback, useRef, useState } from "react";
 
 import { fetchDaylogEvents, updateDaylogEvent } from "../api/daylogEvents";
+import { fetchDaylogEventTypes } from "../api/daylogEventTypes";
 import { DaylogCalendar, type EventTimesChangeArg } from "../components/DaylogCalendar";
 import { DaylogModal, type DaylogModalDraft } from "../components/DaylogModal";
-import type { DaylogEventKind } from "../types/daylogEventKinds";
 import { buildDaylogCalendarEvents } from "../utils/buildDaylogCalendarEvents";
 
 type CalendarInteractionArg = DateClickArg | DateSelectArg | EventClickArg;
+
+function defaultEventTypeCode(): string {
+  return "custom";
+}
 
 export default function DaylogHomePage() {
   const [events, setEvents] = useState<EventInput[]>([]);
@@ -29,12 +33,22 @@ export default function DaylogHomePage() {
     [reload],
   );
 
-  const refetchVisible = useCallback(() => {
+  const refetchVisible = useCallback(async () => {
     const r = visibleRangeRef.current;
     if (r) {
-      void reload(r.start, r.end);
+      await reload(r.start, r.end);
     }
   }, [reload]);
+
+  async function resolveDefaultTypeCode(): Promise<string> {
+    try {
+      const types = await fetchDaylogEventTypes();
+      const first = types[0]?.code;
+      return first ?? defaultEventTypeCode();
+    } catch {
+      return defaultEventTypeCode();
+    }
+  }
 
   function openModal(draft: DaylogModalDraft) {
     setModalDraft(draft);
@@ -45,14 +59,14 @@ export default function DaylogHomePage() {
     setIsModalOpen(false);
   }
 
-  function handleInteraction(args: CalendarInteractionArg) {
+  async function handleInteraction(args: CalendarInteractionArg) {
     if ("event" in args && args.event) {
       const e = args.event;
       const ext = e.extendedProps as { daylogEventType?: string; customText?: string };
       openModal({
         mode: "edit",
         id: e.id,
-        eventType: (ext.daylogEventType as DaylogEventKind) ?? "custom",
+        eventType: ext.daylogEventType ?? defaultEventTypeCode(),
         start: e.start!,
         end: e.end ?? null,
         customText: ext.customText ?? "",
@@ -60,9 +74,10 @@ export default function DaylogHomePage() {
       return;
     }
     if ("start" in args && "end" in args && args.start) {
+      const code = await resolveDefaultTypeCode();
       openModal({
         mode: "create",
-        eventType: "custom",
+        eventType: code,
         start: args.start,
         end: args.end ?? null,
         customText: "",
@@ -70,9 +85,10 @@ export default function DaylogHomePage() {
       return;
     }
     if ("date" in args && args.date) {
+      const code = await resolveDefaultTypeCode();
       openModal({
         mode: "create",
-        eventType: "custom",
+        eventType: code,
         start: args.date,
         end: null,
         customText: "",
@@ -89,7 +105,7 @@ export default function DaylogHomePage() {
     const ext = info.event.extendedProps as { daylogEventType?: string; customText?: string };
     try {
       await updateDaylogEvent(id, {
-        eventType: (ext.daylogEventType as DaylogEventKind) ?? "custom",
+        eventType: ext.daylogEventType ?? defaultEventTypeCode(),
         startUtc: info.event.start!,
         endUtc: info.event.end ?? null,
         customText: ext.customText ? ext.customText : null,

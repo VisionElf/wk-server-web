@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using WkApi;
 using WkApi.Core.Data;
+using WkApi.Apps.Daylog;
 using WkApi.Apps.LastTime;
 using WkApi.Apps.FutureMatches;
 using WkApi.Infrastructure.Files;
@@ -78,6 +79,7 @@ using (var scope = app.Services.CreateScope()) {
     }
 
     await LtiDbSeeder.SeedDefaultsAsync(db);
+    await DaylogDbSeeder.EnsureDefaultsAsync(db);
 }
 
 app.UseCors("WkCors");

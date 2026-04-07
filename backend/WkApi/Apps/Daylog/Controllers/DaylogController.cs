@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WkApi.Apps.Daylog;
 using WkApi.Apps.Daylog.Entities;
 using WkApi.Core.Data;
 
@@ -20,6 +19,9 @@ public class DaylogController : ControllerBase
     public record DaylogEventDto(
         Guid Id,
         string EventType,
+        string EventTypeLabel,
+        string BackgroundColor,
+        string? TextColor,
         DateTime StartUtc,
         DateTime? EndUtc,
         string? CustomText);
@@ -42,6 +44,7 @@ public class DaylogController : ControllerBase
 
         var rows = await _db.DaylogEvents
             .AsNoTracking()
+            .Include(e => e.TypeDefinition)
             .Where(e => e.StartUtc < end && (e.EndUtc == null ? e.StartUtc >= start : e.EndUtc > start))
             .OrderBy(e => e.StartUtc)
             .ToListAsync(ct);
@@ -52,8 +55,8 @@ public class DaylogController : ControllerBase
     [HttpPost("events")]
     public async Task<ActionResult<DaylogEventDto>> Create([FromBody] CreateDaylogEventDto body, CancellationToken ct)
     {
-        if (!DaylogEventTypes.IsAllowed(body.EventType)) {
-            return BadRequest("Invalid event type.");
+        if (!await EventTypeExistsAsync(body.EventType, ct)) {
+            return BadRequest("Unknown or invalid event type.");
         }
 
         var validation = ValidateTimes(body.StartUtc, body.EndUtc);
@@ -71,14 +74,15 @@ public class DaylogController : ControllerBase
         _db.DaylogEvents.Add(entity);
         await _db.SaveChangesAsync(ct);
 
+        await _db.Entry(entity).Reference(e => e.TypeDefinition).LoadAsync(ct);
         return Created($"/api/daylog/events/{entity.Id}", ToDto(entity));
     }
 
     [HttpPut("events/{id:guid}")]
     public async Task<ActionResult<DaylogEventDto>> Update(Guid id, [FromBody] UpdateDaylogEventDto body, CancellationToken ct)
     {
-        if (!DaylogEventTypes.IsAllowed(body.EventType)) {
-            return BadRequest("Invalid event type.");
+        if (!await EventTypeExistsAsync(body.EventType, ct)) {
+            return BadRequest("Unknown or invalid event type.");
         }
 
         var validation = ValidateTimes(body.StartUtc, body.EndUtc);
@@ -86,7 +90,9 @@ public class DaylogController : ControllerBase
             return BadRequest(validation);
         }
 
-        var entity = await _db.DaylogEvents.FindAsync([id], ct);
+        var entity = await _db.DaylogEvents
+            .Include(e => e.TypeDefinition)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
         if (entity == null) {
             return NotFound();
         }
@@ -97,6 +103,8 @@ public class DaylogController : ControllerBase
         entity.CustomText = string.IsNullOrWhiteSpace(body.CustomText) ? null : body.CustomText.Trim();
 
         await _db.SaveChangesAsync(ct);
+
+        await _db.Entry(entity).Reference(e => e.TypeDefinition).LoadAsync(ct);
         return Ok(ToDto(entity));
     }
 
@@ -113,17 +121,31 @@ public class DaylogController : ControllerBase
         return NoContent();
     }
 
-    private static DaylogEventDto ToDto(DaylogEvent e) =>
-        new(e.Id, e.EventType, e.StartUtc, e.EndUtc, e.CustomText);
+    private async Task<bool> EventTypeExistsAsync(string code, CancellationToken ct) =>
+        await _db.DaylogEventTypeDefinitions.AnyAsync(t => t.Code == code, ct);
+
+    private static DaylogEventDto ToDto(DaylogEvent e)
+    {
+        var td = e.TypeDefinition;
+        return new DaylogEventDto(
+            e.Id,
+            e.EventType,
+            td?.Label ?? e.EventType,
+            td?.BackgroundColor ?? "#333333",
+            td?.TextColor,
+            e.StartUtc,
+            e.EndUtc,
+            e.CustomText);
+    }
 
     private static string? ValidateTimes(DateTime start, DateTime? end)
     {
-        var startUtc = start.ToUniversalTime();
         if (end == null) {
             return null;
         }
 
         var endUtc = end.Value.ToUniversalTime();
+        var startUtc = start.ToUniversalTime();
         return endUtc < startUtc ? "End time must be on or after start time." : null;
     }
 }

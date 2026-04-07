@@ -6,5 +6,6 @@ export const daylogApp: SubAppDefinition = {
   pathPrefix: "/daylog",
   subNav: [
     { id: "home", label: "Daylog" },
+    { id: "event-types", label: "Event types" },
   ],
 };

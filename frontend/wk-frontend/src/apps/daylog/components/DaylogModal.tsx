@@ -5,13 +5,13 @@ import {
   deleteDaylogEvent,
   updateDaylogEvent,
 } from "../api/daylogEvents";
-import { DAYLOG_EVENT_LABELS, DAYLOG_EVENT_TYPES, type DaylogEventKind } from "../types/daylogEventKinds";
+import { fetchDaylogEventTypes, type DaylogEventTypeDto } from "../api/daylogEventTypes";
 import { fromDatetimeLocalValue, toDatetimeLocalValue } from "../utils/datetimeLocal";
 
 export type DaylogModalDraft = {
   mode: "create" | "edit";
   id?: string;
-  eventType: DaylogEventKind;
+  eventType: string;
   start: Date;
   end: Date | null;
   customText: string;
@@ -28,12 +28,22 @@ export function DaylogModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [eventType, setEventType] = useState<DaylogEventKind>("custom");
+  const [types, setTypes] = useState<DaylogEventTypeDto[] | null>(null);
+  const [eventType, setEventType] = useState("");
   const [customText, setCustomText] = useState("");
   const [startLocal, setStartLocal] = useState("");
   const [endLocal, setEndLocal] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    void fetchDaylogEventTypes()
+      .then(setTypes)
+      .catch(() => setTypes([]));
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || !draft) {
@@ -45,6 +55,13 @@ export function DaylogModal({
     setEndLocal(draft.end ? toDatetimeLocalValue(draft.end) : "");
     setError(null);
   }, [isOpen, draft]);
+
+  useEffect(() => {
+    if (!isOpen || !types?.length) {
+      return;
+    }
+    setEventType((prev) => (types.some((t) => t.code === prev) ? prev : types[0].code));
+  }, [isOpen, types]);
 
   if (!isOpen || !draft) {
     return null;
@@ -60,6 +77,11 @@ export function DaylogModal({
     }
 
     setError(null);
+
+    if (!types?.length) {
+      setError("No event types are configured. Add types in Daylog → Event types.");
+      return;
+    }
 
     const start = fromDatetimeLocalValue(startLocal);
     let end: Date | null = null;
@@ -135,12 +157,13 @@ export function DaylogModal({
             <span>Type</span>
             <select
               value={eventType}
-              onChange={(ev) => setEventType(ev.target.value as DaylogEventKind)}
-              disabled={busy}
+              onChange={(ev) => setEventType(ev.target.value)}
+              disabled={busy || types === null}
             >
-              {DAYLOG_EVENT_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {DAYLOG_EVENT_LABELS[t]}
+              {types === null && <option value="">Loading…</option>}
+              {types?.map((t) => (
+                <option key={t.id} value={t.code}>
+                  {t.label}
                 </option>
               ))}
             </select>

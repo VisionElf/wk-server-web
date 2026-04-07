@@ -237,6 +237,7 @@
 
 .ui-input,
 .ui-field input[type="text"],
+.ui-field input[type="number"],
 .ui-field input[type="date"] {
   width: 100%;
   box-sizing: border-box;
@@ -251,10 +252,68 @@
   letter-spacing: 0.02em;
 }
 
+.ui-input:disabled,
+.ui-field input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .ui-input:focus,
 .ui-field input:focus {
   outline: 2px solid var(--accent-border);
   outline-offset: 1px;
+}
+
+/* Native color inside a framed control (same surface as .ui-input) */
+.ui-color-input {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 2.75rem;
+  height: 2.35rem;
+  padding: 0.2rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.ui-color-input:hover {
+  border-color: var(--accent-border);
+}
+
+.ui-color-input:focus-within {
+  outline: 2px solid var(--accent-border);
+  outline-offset: 1px;
+}
+
+.ui-color-input input[type="color"] {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: calc(var(--radius-sm) - 3px);
+  cursor: pointer;
+  background: transparent;
+  font: inherit;
+}
+
+.ui-color-input input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.ui-color-input input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
+.ui-color-input input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 2px;
 }
 
 /* Native select: match .ui-input surface + chevron */

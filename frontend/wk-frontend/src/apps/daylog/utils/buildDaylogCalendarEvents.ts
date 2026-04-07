@@ -15,12 +15,15 @@ export function buildDaylogCalendarEvents(dtos: DaylogEventDto[]): EventInput[] 
 function dtoToEventInput(dto: DaylogEventDto): EventInput {
   return {
     id: dto.id,
-    title: formatDaylogTitle(dto.eventType, dto.customText),
+    title: formatDaylogTitle(dto.eventTypeLabel, dto.customText),
     start: dto.startUtc,
     end: dto.endUtc ?? undefined,
     extendedProps: {
       daylogEventType: dto.eventType,
+      daylogEventLabel: dto.eventTypeLabel,
       customText: dto.customText ?? "",
+      backgroundColor: dto.backgroundColor,
+      textColor: dto.textColor,
     },
   };
 }

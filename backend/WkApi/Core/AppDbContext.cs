@@ -25,6 +25,8 @@ public class AppDbContext : DbContext
 
     public DbSet<DaylogEvent> DaylogEvents => Set<DaylogEvent>();
 
+    public DbSet<DaylogEventTypeDefinition> DaylogEventTypeDefinitions => Set<DaylogEventTypeDefinition>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

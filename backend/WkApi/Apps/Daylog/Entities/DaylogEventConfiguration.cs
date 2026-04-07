@@ -11,5 +11,10 @@ public class DaylogEventConfiguration : IEntityTypeConfiguration<DaylogEvent>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.EventType).HasMaxLength(64).IsRequired();
         builder.Property(e => e.CustomText).HasMaxLength(4000);
+        builder.HasOne(e => e.TypeDefinition)
+            .WithMany(t => t.Events)
+            .HasForeignKey(e => e.EventType)
+            .HasPrincipalKey(t => t.Code)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

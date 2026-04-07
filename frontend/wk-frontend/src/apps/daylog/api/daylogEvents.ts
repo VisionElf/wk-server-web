@@ -1,19 +1,20 @@
 import { apiHeaders } from "@/core/apiHeaders";
 
-import type { DaylogEventKind } from "../types/daylogEventKinds";
-
 const base = "/api/daylog/events";
 
 export type DaylogEventDto = {
   id: string;
-  eventType: DaylogEventKind;
+  eventType: string;
+  eventTypeLabel: string;
+  backgroundColor: string;
+  textColor: string | null;
   startUtc: string;
   endUtc: string | null;
   customText: string | null;
 };
 
 export type DaylogEventWrite = {
-  eventType: DaylogEventKind;
+  eventType: string;
   startUtc: Date;
   endUtc: Date | null;
   customText: string | null;
