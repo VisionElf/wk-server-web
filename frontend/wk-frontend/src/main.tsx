@@ -4,7 +4,7 @@ import { RouterProvider } from "react-router-dom";
 import "./index.css";
 import "./ui.css";
 import "./styles/future-matches.css";
-import { router } from "@/router.tsx";
+import { router } from "@/router";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

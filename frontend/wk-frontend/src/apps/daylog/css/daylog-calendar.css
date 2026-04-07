@@ -1,0 +1,76 @@
+/**
+ * FullCalendar v6 injects its own styles; we tune appearance via CSS variables
+ * (see https://fullcalendar.io/docs/css-customization).
+ * Scoped under .daylog-calendar so other pages are unaffected.
+ */
+.daylog-calendar {
+  --fc-border-color: var(--border);
+  --fc-page-bg-color: var(--bg);
+  --fc-neutral-bg-color: var(--bg);
+  --fc-neutral-text-color: var(--text);
+  --fc-today-bg-color: var(--accent-bg);
+  --fc-now-indicator-color: var(--accent);
+  --fc-list-event-hover-bg-color: var(--accent-bg);
+
+  --fc-button-text-color: var(--text-h);
+  --fc-button-bg-color: var(--bg);
+  --fc-button-border-color: var(--border);
+  --fc-button-hover-bg-color: var(--accent-bg);
+  --fc-button-hover-border-color: var(--accent-border);
+  --fc-button-active-bg-color: var(--accent-bg);
+  --fc-button-active-border-color: var(--accent);
+
+  --fc-event-bg-color: var(--accent);
+  --fc-event-border-color: var(--accent-border);
+  --fc-event-text-color: var(--text-h);
+
+  font-family: var(--sans);
+  text-align: left;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.daylog-calendar .fc {
+  font-size: 0.92rem;
+}
+
+.daylog-calendar .fc-toolbar-title {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+.daylog-calendar .fc-col-header-cell-cushion {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.daylog-calendar .fc-timegrid-slot-label-cushion {
+  color: var(--text);
+  font-size: 0.88em;
+}
+
+.daylog-calendar .fc-scrollgrid {
+  border-radius: var(--radius-sm);
+}
+
+/* Toolbar buttons: match app .ui-btn feel */
+.daylog-calendar .fc-button {
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.65rem;
+  font-weight: 500;
+  text-transform: none;
+}
+
+.daylog-calendar .fc-button-primary:not(:disabled):hover {
+  background-color: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--text-h);
+}
+
+.daylog-calendar .fc-button-primary:not(:disabled).fc-button-active,
+.daylog-calendar .fc-button-primary:not(:disabled):active {
+  background-color: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--text-h);
+}

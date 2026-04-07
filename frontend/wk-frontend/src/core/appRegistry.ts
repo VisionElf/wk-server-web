@@ -1,6 +1,7 @@
 import { futureMatchesSubApp } from "@/apps/future-matches/subApp";
 import { lastTimeSubApp } from "@/apps/last-time/subApp";
 import { healthSubApp } from "@/apps/health/subApp";
+import { daylogSubApp } from "@/apps/daylog/subApp";
 
 import type { SubAppDefinition, SubAppRegistration } from "@/core/subAppTypes";
 
@@ -11,6 +12,7 @@ export const subAppRegistrations: SubAppRegistration[] = [
   healthSubApp,
   lastTimeSubApp,
   futureMatchesSubApp,
+  daylogSubApp,
 ];
 
 export const subApps: SubAppDefinition[] = subAppRegistrations.map(
