@@ -8,7 +8,8 @@ function sortByTime(a: EventInput, b: EventInput): number {
 }
 
 export function buildDaylogCalendarEvents(dtos: DaylogEventDto[]): EventInput[] {
-  const raw = dtos.map(dtoToEventInput);
+  let raw = dtos.map(dtoToEventInput);
+  raw = configureSleepEvents(raw);
   return raw.sort(sortByTime).map((e) => applyDaylogTheme(e));
 }
 
@@ -26,4 +27,33 @@ function dtoToEventInput(dto: DaylogEventDto): EventInput {
       textColor: dto.textColor,
     },
   };
+}
+
+function configureSleepEvents(events: EventInput[]): EventInput[] {
+  const results: EventInput[] = [];
+  let currentSleepEvent: EventInput | undefined = undefined;
+  for (const event of events) {
+    if (event.extendedProps?.daylogEventType === "sleep_start") {
+      currentSleepEvent = event;
+      results.push(event);
+    }
+    else if (event.extendedProps?.daylogEventType === "sleep_end") {
+      results.push(event);
+      let newEvent = {
+        start: currentSleepEvent?.start,
+        end: event.start,
+        display: "background",
+        extendedProps: {
+          backgroundColor: "#0000aa",
+          textColor: "#eeeeee",
+        }
+      };
+      results.push(newEvent);
+      currentSleepEvent = undefined;
+    }
+    else {
+      results.push(event);
+    }
+  }
+  return results;
 }

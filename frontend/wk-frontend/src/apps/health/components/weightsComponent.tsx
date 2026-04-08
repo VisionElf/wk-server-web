@@ -25,6 +25,7 @@ import {
 } from "@/core/utils/bmi";
 import {
   formatWeightWithUnit,
+  lbToKg,
   type WeightDisplayUnit,
   weightFromKg,
 } from "@/core/utils/weightUnits";
@@ -101,7 +102,10 @@ export function DisplayWeightsChart() {
 
   const [createWeightModalOpen, setCreateWeightModalOpen] = useState(false);
   const [weightDate, setWeightDate] = useState("");
-  const [weightInKg, setWeightInKg] = useState("");
+  /** Raw text in the user's chosen {@link weightUnit} (kg or lb). */
+  const [weightInput, setWeightInput] = useState("");
+  const [createWeightBusy, setCreateWeightBusy] = useState(false);
+  const [createWeightError, setCreateWeightError] = useState<string | null>(null);
   const [importMessage, setImportMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -142,17 +146,50 @@ export function DisplayWeightsChart() {
       : undefined;
 
   const openCreateWeightModal = () => {
+    setWeightDate(toDateInputValue(new Date()));
+    setWeightInput("");
+    setCreateWeightError(null);
     setCreateWeightModalOpen(true);
   };
 
-  const addWeight = async () => {
-    await postWeight({
-      measuredAtUtc: new Date(weightDate),
-      weightInKilograms: Number(weightInKg),
-    });
-    void loadWeights();
+  const closeCreateWeightModal = () => {
+    if (createWeightBusy) {
+      return;
+    }
     setCreateWeightModalOpen(false);
   };
+
+  async function submitCreateWeight(e: React.FormEvent) {
+    e.preventDefault();
+    setCreateWeightError(null);
+
+    const raw = weightInput.trim().replace(",", ".");
+    const displayVal = parseFloat(raw);
+    if (weightDate.trim() === "") {
+      setCreateWeightError("Pick a date.");
+      return;
+    }
+    if (!Number.isFinite(displayVal) || displayVal <= 0) {
+      setCreateWeightError(`Enter a valid weight (${weightUnit}).`);
+      return;
+    }
+
+    const weightInKilograms = weightUnit === "lb" ? lbToKg(displayVal) : displayVal;
+
+    setCreateWeightBusy(true);
+    try {
+      await postWeight({
+        measuredAtUtc: new Date(`${weightDate}T12:00:00`),
+        weightInKilograms,
+      });
+      void loadWeights();
+      setCreateWeightModalOpen(false);
+    } catch (err) {
+      setCreateWeightError(err instanceof Error ? err.message : "Request failed.");
+    } finally {
+      setCreateWeightBusy(false);
+    }
+  }
 
   const onImportClick = () => {
     setImportMessage(null);
@@ -362,25 +399,67 @@ export function DisplayWeightsChart() {
         </p>
       )}
       {createWeightModalOpen && (
-        <div className="ui-modal">
-          <h2>Create weight</h2>
-          <input
-            className="ui-input"
-            type="date"
-            value={weightDate}
-            onChange={(e) => setWeightDate(e.target.value)}
-          />
-          <input
-            className="ui-input"
-            type="text"
-            inputMode="decimal"
-            placeholder="kg"
-            value={weightInKg}
-            onChange={(e) => setWeightInKg(e.target.value)}
-          />
-          <button type="button" className="ui-btn ui-btn--primary" onClick={addWeight}>
-            Create
-          </button>
+        <div
+          className="ui-modal-backdrop"
+          role="presentation"
+          onMouseDown={createWeightBusy ? undefined : closeCreateWeightModal}
+        >
+          <div
+            className="ui-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="health-weight-modal-title"
+            onMouseDown={(ev) => ev.stopPropagation()}
+          >
+            <h2 id="health-weight-modal-title">Add weight</h2>
+            <p className="ui-lead" style={{ fontSize: "0.9rem", color: "var(--text)", marginBottom: "1rem" }}>
+              Values use the unit selected above ({weightUnit}).
+            </p>
+            <form onSubmit={submitCreateWeight}>
+              <div className="ui-field">
+                <label htmlFor="health-weight-date">Date</label>
+                <input
+                  id="health-weight-date"
+                  className="ui-input"
+                  type="date"
+                  value={weightDate}
+                  onChange={(e) => setWeightDate(e.target.value)}
+                  required
+                  disabled={createWeightBusy}
+                />
+              </div>
+              <div className="ui-field">
+                <label htmlFor="health-weight-value">Weight ({weightUnit})</label>
+                <input
+                  id="health-weight-value"
+                  className="ui-input"
+                  type="text"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  placeholder={weightUnit === "lb" ? "e.g. 165" : "e.g. 75.5"}
+                  value={weightInput}
+                  onChange={(e) => setWeightInput(e.target.value)}
+                  disabled={createWeightBusy}
+                />
+              </div>
+              {createWeightError != null && (
+                <p
+                  role="alert"
+                  style={{ margin: "0 0 0.75rem", fontSize: "0.88rem", color: "var(--danger-fg)" }}
+                >
+                  {createWeightError}
+                </p>
+              )}
+              <div className="ui-modal__row">
+                <button type="button" className="ui-btn" onClick={closeCreateWeightModal} disabled={createWeightBusy}>
+                  Cancel
+                </button>
+                <button type="submit" className="ui-btn ui-btn--primary" disabled={createWeightBusy}>
+                  {createWeightBusy ? "Saving…" : "Save"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
